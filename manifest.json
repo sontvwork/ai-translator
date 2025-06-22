@@ -1,0 +1,19 @@
+{
+    "manifest_version": 3,
+    "name": "AI Translator",
+    "description": "A Chrome extension to translate text using Gemini API",
+    "version": "1.2",
+    "icons": {
+        "32": "assets/favicon32.png",
+        "48": "assets/favicon48.png",
+        "128": "assets/favicon.png"
+    },
+    "action": {
+        "default_popup": "popup.html",
+        "default_icon": "assets/favicon.png"
+    },
+    "options_page": "settings.html",
+    "permissions": [
+        "storage"
+    ]
+}

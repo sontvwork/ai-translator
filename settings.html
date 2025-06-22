@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cài đặt AI Translator</title>
+    <link rel="stylesheet" href="css/tailwind-minimal.css">
+    <link rel="stylesheet" href="fonts/inter.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="settings-page">
+    <!-- Success Message Popup -->
+    <div class="success-message" id="success-message">
+        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+        </svg>
+        Cài đặt đã được lưu thành công!
+    </div>
+
+    <div class="settings-container">
+        <div class="settings-header">
+            <h1>⚙️ Cài đặt AI Translator</h1>
+            <p>Tuỳ chỉnh extension theo sở thích của bạn</p>
+        </div>
+        
+        <div class="settings-content">
+            <div class="setting-group">
+                <label class="setting-label">🔑 Google Gemini API Key</label>
+                <p class="setting-description">
+                    Nhập API Key của Google Gemini để sử dụng tính năng dịch. Bạn có thể tạo API Key miễn phí tại Google AI Studio.
+                </p>
+                <div class="setting-guide">
+                    <h4 style="color: #4c51bf; font-weight: 600; margin: 0 0 8px 0; font-size: 14px;">✨ Tại sao nên dùng API Key riêng?</h4>
+                    <ul style="margin: 0; padding-left: 16px; color: #5a67d8; font-size: 13px; line-height: 1.5;">
+                        <li><strong>Không giới hạn:</strong> Dịch không giới hạn số lần trong ngày</li>
+                        <li><strong>Nhanh và ổn định:</strong> Không bị giới hạn bởi server của extension</li>
+                        <li><strong>Riêng tư và bảo mật:</strong> API Key chỉ lưu trữ trên máy của bạn</li>
+                        <li><strong>Miễn phí:</strong> Google cho phép tạo API Key hoàn toàn miễn phí</li>
+                    </ul>
+                    <div style="margin-top: 12px; padding: 8px 12px; background: rgba(255,255,255,0.7); border-radius: 8px; font-size: 12px; color: #553c9a;">
+                        <strong>💡 Cách tạo:</strong> Truy cập link bên dưới → Đăng nhập Google → Nhấn "Create API Key" → Copy và dán vào đây
+                    </div>
+                </div>
+                <div class="api-key-creation-url" style="margin-top: 8px;">
+                    <a href="https://aistudio.google.com/app/apikey" target="_blank" style="color: #667eea; text-decoration: none;">
+                        🔗 Tạo API Key tại Google AI Studio
+                    </a>
+                </div>
+                <div class="api-key-container">
+                    <input 
+                        type="password" 
+                        id="api-key" 
+                        class="modern-input" 
+                        placeholder="Nhập Google Gemini API Key..."
+                        style="padding-right: 50px;"
+                    >
+                    <button type="button" class="toggle-password" id="toggle-password">
+                        👁️
+                    </button>
+                </div>
+            </div>
+            
+            <div class="setting-group">
+                <label class="setting-label">⏱️ Độ trễ dịch tự động</label>
+                <p class="setting-description">
+                    Thời gian chờ sau khi bạn ngừng nhập để bắt đầu dịch (từ 300ms đến 1000ms)
+                </p>
+                <input 
+                    type="range" 
+                    id="translation-delay" 
+                    class="modern-range" 
+                    min="300" 
+                    max="1000" 
+                    step="100" 
+                    value="1000"
+                >
+                <div class="delay-display" id="delay-display">
+                    Độ trễ hiện tại: <span id="delay-value">1000</span>ms
+                </div>
+            </div>
+            
+            
+            <button class="save-button" id="save-settings">
+                💾 Lưu cài đặt
+            </button>
+        </div>
+    </div>
+    
+    <script src="settings.js"></script>
+</body>
+</html> 
