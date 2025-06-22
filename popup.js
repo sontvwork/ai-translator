@@ -12,7 +12,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
   let timeoutId;
   let translationDelay = 500; // default delay - matches settings default
-  let isSwitching = false; // flag để ngăn chặn sự kiện dư thừa khi switch language
+  let isSwitching = false; // prevent multiple event calls
 
   restoreStoredData();
 
