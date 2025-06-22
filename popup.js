@@ -116,7 +116,6 @@ document.addEventListener("DOMContentLoaded", function () {
       return;
     }
 
-    // Kiểm tra giới hạn độ dài text
     const maxLength = 8000;
     if (text.length > maxLength) {
       outputTextArea.value = `❌ Văn bản quá dài!\n\nĐộ dài hiện tại: ${text.length} ký tự\nGiới hạn tối đa: ${maxLength} ký tự`;
