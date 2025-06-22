@@ -139,6 +139,7 @@ document.addEventListener("DOMContentLoaded", function () {
       saveOutputText();
 
       autoResizeTextarea();
+      scrollToBottom();
     } catch (error) {
       console.error("Error:", error);
       if (error.message.includes('API_KEY')) {
@@ -283,4 +284,15 @@ function autoResizeTextarea() {
   textarea.style.height = "auto";
   const maxHeight = 20 * parseFloat(getComputedStyle(textarea).lineHeight);
   textarea.style.height = Math.min(textarea.scrollHeight, maxHeight) + "px";
+}
+
+function scrollToBottom() {
+  // Scroll the container to bring the output section into view
+  const outputSection = document.querySelector('.output-section');
+  if (outputSection) {
+    outputSection.scrollIntoView({ 
+      behavior: 'smooth', 
+      block: 'end' 
+    });
+  }
 }
