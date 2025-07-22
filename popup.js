@@ -51,17 +51,40 @@ document.addEventListener("DOMContentLoaded", function () {
     }, (syncResult) => {
       translationDelay = syncResult.translationDelay;
       
-      chrome.storage.local.get(['inputText', 'outputText', 'sourceLang', 'targetLang'], (result) => {
-        if (result.inputText) {
-          inputTextArea.value = result.inputText;
+      chrome.storage.local.get(['inputText', 'outputText', 'sourceLang', 'targetLang', 'selectedText', 'fromInPageTranslation'], (result) => {
+        // Check if this is from in-page translation
+        if (result.fromInPageTranslation && result.selectedText) {
+          // Auto-fill with selected text
+          inputTextArea.value = result.selectedText;
+          
+          // Set source language to auto-detect
+          sourceLangSelect.value = '';
+          targetLangSelect.value = result.targetLang !== undefined ? result.targetLang : 'vi';
+          
+          // Save the new settings
+          saveInputText();
+          saveLanguageSettings();
+          
+          // Auto-translate
+          setTimeout(() => {
+            translateText();
+          }, 100);
+          
+          // Clear the in-page translation flags
+          chrome.storage.local.remove(['selectedText', 'fromInPageTranslation']);
+        } else {
+          // Normal restore behavior
+          if (result.inputText) {
+            inputTextArea.value = result.inputText;
+          }
+          if (result.outputText) {
+            outputTextArea.value = result.outputText;
+            autoResizeTextarea();
+          }
+          
+          sourceLangSelect.value = result.sourceLang !== undefined ? result.sourceLang : '';
+          targetLangSelect.value = result.targetLang !== undefined ? result.targetLang : 'vi';
         }
-        if (result.outputText) {
-          outputTextArea.value = result.outputText;
-          autoResizeTextarea();
-        }
-        
-        sourceLangSelect.value = result.sourceLang !== undefined ? result.sourceLang : '';
-        targetLangSelect.value = result.targetLang !== undefined ? result.targetLang : 'vi';
         
         inputTextArea.focus();
         if (inputTextArea.value) {

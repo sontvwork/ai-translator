@@ -3,6 +3,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const togglePasswordButton = document.getElementById('toggle-password');
     const translationDelayInput = document.getElementById('translation-delay');
     const delayValueSpan = document.getElementById('delay-value');
+    const inPageTranslationInput = document.getElementById('in-page-translation');
     const saveButton = document.getElementById('save-settings');
     const successMessage = document.getElementById('success-message');
 
@@ -30,18 +31,21 @@ document.addEventListener('DOMContentLoaded', function() {
     function loadSettings() {
         chrome.storage.sync.get({
             apiKey: '',
-            translationDelay: 500
+            translationDelay: 500,
+            inPageTranslationEnabled: true
         }, function(result) {
             apiKeyInput.value = result.apiKey;
             translationDelayInput.value = result.translationDelay;
             delayValueSpan.textContent = result.translationDelay;
+            inPageTranslationInput.checked = result.inPageTranslationEnabled;
         });
     }
 
     function saveSettings() {
         const settings = {
             apiKey: apiKeyInput.value.trim(),
-            translationDelay: parseInt(translationDelayInput.value)
+            translationDelay: parseInt(translationDelayInput.value),
+            inPageTranslationEnabled: inPageTranslationInput.checked
         };
 
         chrome.storage.sync.set(settings, function() {

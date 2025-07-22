@@ -14,6 +14,17 @@
     },
     "options_page": "settings.html",
     "permissions": [
-        "storage"
-    ]
+        "storage",
+        "activeTab"
+    ],
+    "content_scripts": [
+        {
+            "matches": ["<all_urls>"],
+            "js": ["content-script.js"],
+            "css": ["content-script.css"]
+        }
+    ],
+    "background": {
+        "service_worker": "background.js"
+    }
 }
