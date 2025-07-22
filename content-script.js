@@ -1,7 +1,18 @@
 (function() {
     let translatorIcon = null;
     let isFeatureEnabled = true;
-    let hideTimeout = null;
+    let currentSelectedText = '';
+
+    // Debounce function to limit the rate at which a function gets called.
+    function debounce(func, delay) {
+        let timeoutId;
+        return function(...args) {
+            clearTimeout(timeoutId);
+            timeoutId = setTimeout(() => {
+                func.apply(this, args);
+            }, delay);
+        };
+    }
 
     // Load settings from storage
     function loadSettings() {
@@ -51,7 +62,7 @@
         
         // Position the icon above the selection
         const iconX = rect.left + (rect.width / 2) - 16; // Center horizontally
-        const iconY = rect.top - 40; // Position above the selection
+        const iconY = rect.top - 36; // Position above the selection
         
         // Ensure the icon stays within viewport bounds
         const viewportWidth = window.innerWidth;
@@ -81,12 +92,6 @@
 
         positionIcon(selection);
         
-        // Clear any existing hide timeout
-        if (hideTimeout) {
-            clearTimeout(hideTimeout);
-            hideTimeout = null;
-        }
-
         // Show the icon with animation
         requestAnimationFrame(() => {
             translatorIcon.classList.add('show');
@@ -98,6 +103,7 @@
         if (translatorIcon) {
             translatorIcon.classList.remove('show');
         }
+        currentSelectedText = '';
     }
 
     // Handle icon click
@@ -105,99 +111,51 @@
         event.preventDefault();
         event.stopPropagation();
 
-        const selectedText = window.getSelection().toString().trim();
-        if (!selectedText) return;
+        if (!currentSelectedText) return;
 
-        // Store the selected text and open popup
         chrome.storage.local.set({
-            selectedText: selectedText,
+            selectedText: currentSelectedText,
             fromInPageTranslation: true
         });
 
-        // Hide the icon
         hideIcon();
-
-        // Clear selection
         window.getSelection().removeAllRanges();
 
         // Open the extension popup (this will trigger the popup to auto-fill and translate)
         chrome.runtime.sendMessage({
             action: 'openPopup',
-            selectedText: selectedText
+            selectedText: currentSelectedText
         });
     }
 
-    // Handle text selection
-    function handleSelection() {
+    // Handle text selection changes
+    function handleSelectionChange() {
         if (!isFeatureEnabled) return;
 
         const selection = window.getSelection();
         const selectedText = selection.toString().trim();
 
         if (selectedText && selectedText.length > 0 && selectedText.length <= 8000) {
-            // Show icon after a short delay to avoid showing it during drag
-            setTimeout(() => {
-                const currentSelection = window.getSelection();
-                const currentText = currentSelection.toString().trim();
-                
-                if (currentText === selectedText && currentText.length > 0) {
-                    showIcon(currentSelection);
-                }
-            }, 100);
+            currentSelectedText = selectedText;
+            showIcon(selection);
         } else {
-            // Schedule hide with delay to allow for icon clicking
-            if (hideTimeout) {
-                clearTimeout(hideTimeout);
-            }
-            
-            hideTimeout = setTimeout(() => {
-                hideIcon();
-            }, 200);
+            hideIcon();
         }
     }
 
+    // Debounced version of the selection handler
+    const debouncedSelectionHandler = debounce(handleSelectionChange, 200);
+
     // Event listeners
-    document.addEventListener('mouseup', handleSelection);
-    document.addEventListener('keyup', (event) => {
-        // Handle keyboard selection (Shift + arrow keys, Ctrl+A, etc.)
-        if (event.shiftKey || event.ctrlKey || event.metaKey) {
-            setTimeout(handleSelection, 10);
-        }
-    });
+    document.addEventListener('selectionchange', debouncedSelectionHandler);
 
-    // Hide icon when clicking elsewhere
-    document.addEventListener('click', (event) => {
+    // Hide icon when clicking elsewhere, ensuring icon click is still possible
+    document.addEventListener('mousedown', (event) => {
         if (translatorIcon && !translatorIcon.contains(event.target)) {
-            // Add delay to allow for icon clicking
-            setTimeout(() => {
-                const selection = window.getSelection();
-                if (!selection.toString().trim()) {
-                    hideIcon();
-                }
-            }, 100);
-        }
-    });
-
-    // Hide icon when scrolling
-    let scrollTimeout = null;
-    document.addEventListener('scroll', () => {
-        if (scrollTimeout) {
-            clearTimeout(scrollTimeout);
-        }
-        
-        scrollTimeout = setTimeout(() => {
             const selection = window.getSelection();
-            if (selection.toString().trim() && translatorIcon) {
-                positionIcon(selection);
+            if (!selection.toString().trim()) {
+                hideIcon();
             }
-        }, 100);
-    });
-
-    // Handle window resize
-    window.addEventListener('resize', () => {
-        const selection = window.getSelection();
-        if (selection.toString().trim() && translatorIcon) {
-            positionIcon(selection);
         }
     });
 })();
