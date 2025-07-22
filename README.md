@@ -1,6 +1,12 @@
 # AI Translator using Google Gemini
 
-## Setup guideline
+## Chrome Web Store
+
+AI Translator is now available on the [Chrome Web Store](https://chromewebstore.google.com/detail/ai-translator/eldijifegbkbpeifmbghliglkiehldie).
+
+This is an open-source project. Contributions are highly welcome! Let's make this extension even better together.
+
+## Local Setup Guideline
 
 1. Go to the Extensions page by entering `chrome://extensions` in a new tab
     - Alternatively, click the Extensions menu puzzle button and select **Manage Extensions** at the bottom of the menu.
