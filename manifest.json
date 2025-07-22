@@ -1,7 +1,7 @@
 {
     "manifest_version": 3,
     "name": "AI Translator",
-    "description": "Translate text using Gemini API",
+    "description": "Translate text using Google Gemini",
     "version": "2.0",
     "icons": {
         "32": "assets/favicon32.png",
