@@ -57,13 +57,13 @@ html::-webkit-scrollbar {
 
 .settings-button {
   padding: 8px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
   border: none;
   border-radius: 12px;
   color: white;
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+  box-shadow: 0 2px 8px rgba(220, 38, 38, 0.3);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -74,7 +74,7 @@ html::-webkit-scrollbar {
 
 .settings-button:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(102, 126, 234, 0.4);
+  box-shadow: 0 8px 24px rgba(220, 38, 38, 0.4);
 }
 
 .settings-button:active {
