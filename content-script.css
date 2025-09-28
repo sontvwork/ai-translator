@@ -1,6 +1,6 @@
 .ai-translator-icon {
     position: absolute;
-    z-index: 10000;
+    z-index: 999999999;
     width: 26px;
     height: 26px;
     background-image: url('chrome-extension://__MSG_@@extension_id__/assets/favicon48.png');

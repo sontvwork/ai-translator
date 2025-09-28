@@ -2,7 +2,7 @@
     "manifest_version": 3,
     "name": "AI Translator",
     "description": "Translate text using Google Gemini",
-    "version": "2.0",
+    "version": "2.1",
     "icons": {
         "32": "assets/favicon32.png",
         "48": "assets/favicon48.png",

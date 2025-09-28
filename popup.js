@@ -128,7 +128,7 @@ document.addEventListener("DOMContentLoaded", function () {
     return apiKeyResult.apiKey ? apiKeyResult.apiKey.trim() : '';
   }
 
-  async function translateText() {
+  async function translateText(retryCount = 0) {
     const sourceLang = sourceLangSelect.value;
     const targetLang = targetLangSelect.value;
     const text = inputTextArea.value.trim();
@@ -156,7 +156,10 @@ document.addEventListener("DOMContentLoaded", function () {
 
     try {
       const outputContainer = document.querySelector(".output-section .textarea-container");
-      outputContainer.classList.add("rainbow-loading");
+
+      if (retryCount === 0) {
+        outputContainer.classList.add("rainbow-loading");
+      }
 
       const prompt = getPrompt({ text, sourceLang, targetLang });
       const response = await translateByGemini(prompt, apiKey);
@@ -174,10 +177,26 @@ document.addEventListener("DOMContentLoaded", function () {
       console.error("Error:", error);
       if (error.message.includes('API_KEY')) {
         outputTextArea.value = "❌ API Key không hợp lệ!\n\nVui lòng kiểm tra lại API Key trong phần Cài đặt.";
+        saveOutputText();
+      } else if (error.message.includes('503') && error.message.includes('The service is currently unavailable')) {
+        // Retry logic for 503 errors
+        if (retryCount < 2) {
+          outputTextArea.value = "⌛ Máy chủ Google hiện đang bận! Đang thử lại...";
+          saveOutputText();
+          
+          // Wait 1 second then retry
+          setTimeout(() => {
+            translateText(retryCount + 1);
+          }, 1000);
+          return; // Don't remove loading class yet
+        } else {
+          outputTextArea.value = "❌ Máy chủ Google hiện đang bận! Vui lòng thử lại sau.";
+          saveOutputText();
+        }
       } else {
         outputTextArea.value = "❌ Lỗi khi dịch!\n\nVui lòng thử lại hoặc kiểm tra kết nối mạng.";
+        saveOutputText();
       }
-      saveOutputText();
     } finally {
       const outputContainer = document.querySelector(".output-section .textarea-container");
       outputContainer.classList.remove("rainbow-loading");
@@ -285,12 +304,11 @@ async function translateByGemini(prompt, apiKey) {
       throw new Error('API_KEY_MISSING');
     }
 
-    // Access your API key from settings
     const genAI = new GoogleGenerativeAI(apiKey);
 
-    // The Gemini 2.0 models are versatile and work with most use cases
+    // The Gemini 2.5-flash-lite models are versatile and work with most use cases
     const model = genAI.getGenerativeModel({ 
-      model: "gemini-2.0-flash",
+      model: "gemini-2.5-flash-lite",
       generationConfig: {
         temperature: 0.2,
       },
