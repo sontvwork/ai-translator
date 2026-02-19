@@ -702,3 +702,22 @@ input:checked + .toggle-slider:before {
   font-weight: 500;
   cursor: pointer;
 }
+
+/* Quota Link */
+.quota-link {
+  font-size: 0.875rem;
+  color: #3b82f6; /* Blue-500 */
+  text-decoration: none;
+  margin-right: 0.75rem;
+  font-weight: 500;
+  transition: color 0.2s;
+}
+
+.quota-link:hover {
+  text-decoration: underline;
+  color: #2563eb; /* Blue-600 */
+}
+
+.quota-link.hidden {
+  display: none;
+}

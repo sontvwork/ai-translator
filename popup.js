@@ -9,6 +9,7 @@ document.addEventListener("DOMContentLoaded", function () {
   const copyButton = document.getElementById("copy-button");
   const copiedLabel = document.getElementById("copied-label");
   const settingsButton = document.getElementById("settings-button");
+  const checkQuotaLink = document.getElementById("check-quota-link");
 
   let timeoutId;
   let translationDelay = 500; // default delay - matches settings default
@@ -19,7 +20,7 @@ document.addEventListener("DOMContentLoaded", function () {
   inputTextArea.addEventListener("input", () => {
     clearTimeout(timeoutId);
     const timeout = inputTextArea.value.trim() === '' ? 0 : translationDelay;
-    
+
     timeoutId = setTimeout(() => {
       saveInputText();
       translateText();
@@ -30,6 +31,11 @@ document.addEventListener("DOMContentLoaded", function () {
     chrome.storage.local.set({
       inputText: inputTextArea.value
     });
+  }
+
+  function setOutput(text) {
+    outputTextArea.value = text;
+    saveOutputText();
   }
 
   function saveOutputText() {
@@ -50,26 +56,26 @@ document.addEventListener("DOMContentLoaded", function () {
       translationDelay: 1000
     }, (syncResult) => {
       translationDelay = syncResult.translationDelay;
-      
+
       chrome.storage.local.get(['inputText', 'outputText', 'sourceLang', 'targetLang', 'selectedText', 'fromInPageTranslation'], (result) => {
         // Check if this is from in-page translation
         if (result.fromInPageTranslation && result.selectedText) {
           // Auto-fill with selected text
           inputTextArea.value = result.selectedText;
-          
+
           // Set source language to auto-detect
           sourceLangSelect.value = '';
           targetLangSelect.value = result.targetLang !== undefined ? result.targetLang : 'vi';
-          
+
           // Save the new settings
           saveInputText();
           saveLanguageSettings();
-          
+
           // Auto-translate
           setTimeout(() => {
             translateText();
           }, 100);
-          
+
           // Clear the in-page translation flags
           chrome.storage.local.remove(['selectedText', 'fromInPageTranslation']);
         } else {
@@ -81,11 +87,11 @@ document.addEventListener("DOMContentLoaded", function () {
             outputTextArea.value = result.outputText;
             autoResizeTextarea();
           }
-          
+
           sourceLangSelect.value = result.sourceLang !== undefined ? result.sourceLang : '';
           targetLangSelect.value = result.targetLang !== undefined ? result.targetLang : 'vi';
         }
-        
+
         inputTextArea.focus();
         if (inputTextArea.value) {
           inputTextArea.select();
@@ -124,7 +130,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const apiKeyResult = await new Promise((resolve) => {
       chrome.storage.sync.get(['apiKey'], resolve);
     });
-    
+
     return apiKeyResult.apiKey ? apiKeyResult.apiKey.trim() : '';
   }
 
@@ -134,25 +140,25 @@ document.addEventListener("DOMContentLoaded", function () {
     const text = inputTextArea.value.trim();
 
     if (!text) {
-      outputTextArea.value = "";
-      saveOutputText();
+      setOutput("");
       return;
     }
 
     const maxLength = 8000;
     if (text.length > maxLength) {
-      outputTextArea.value = `❌ Văn bản quá dài!\n\nĐộ dài hiện tại: ${text.length} ký tự\nGiới hạn tối đa: ${maxLength} ký tự`;
-      saveOutputText();
+      setOutput(`❌ Văn bản quá dài!\n\nĐộ dài hiện tại: ${text.length} ký tự\nGiới hạn tối đa: ${maxLength} ký tự`);
       return;
     }
 
     const apiKey = await getApiKey();
 
     if (!apiKey) {
-      outputTextArea.value = "❌ Chưa cài đặt API Key!\n\nVui lòng nhấn vào nút cài đặt và làm theo hướng dẫn";
-      saveOutputText();
+      setOutput("❌ Chưa cài đặt API Key!\n\nVui lòng nhấn vào nút cài đặt và làm theo hướng dẫn");
       return;
     }
+
+    // Hide quota link when starting new translation
+    toggleQuotaLink(false);
 
     try {
       const outputContainer = document.querySelector(".output-section .textarea-container");
@@ -168,45 +174,69 @@ document.addEventListener("DOMContentLoaded", function () {
         throw new Error("Network response was not ok");
       }
 
-      outputTextArea.value = response;
-      saveOutputText();
+      setOutput(response);
 
       autoResizeTextarea();
       scrollToBottom();
     } catch (error) {
       console.error("Error:", error);
-      if (error.message.includes('API_KEY')) {
-        outputTextArea.value = "❌ API Key không hợp lệ!\n\nVui lòng kiểm tra lại API Key trong phần Cài đặt.";
-        saveOutputText();
-      } else if (error.message.includes('503') && error.message.includes('The service is currently unavailable')) {
-        // Retry logic for 503 errors
-        if (retryCount < 2) {
-          outputTextArea.value = "⌛ Máy chủ Google hiện đang bận! Đang thử lại...";
-          saveOutputText();
-          
-          // Wait 1 second then retry
-          setTimeout(() => {
-            translateText(retryCount + 1);
-          }, 1000);
-          return; // Don't remove loading class yet
-        } else {
-          outputTextArea.value = "❌ Máy chủ Google hiện đang bận! Vui lòng thử lại sau.";
-          saveOutputText();
-        }
-      } else {
-        outputTextArea.value = "❌ Lỗi khi dịch!\n\nVui lòng thử lại hoặc kiểm tra kết nối mạng.";
-        saveOutputText();
-      }
+      handleGeminiError(error, retryCount);
     } finally {
       const outputContainer = document.querySelector(".output-section .textarea-container");
       outputContainer.classList.remove("rainbow-loading");
     }
   }
 
+  function toggleQuotaLink(show) {
+    if (typeof checkQuotaLink !== 'undefined' && checkQuotaLink) {
+      if (show) {
+        checkQuotaLink.classList.remove('hidden');
+      } else {
+        checkQuotaLink.classList.add('hidden');
+      }
+    }
+  }
+
+  function handleGeminiError(error, retryCount) {
+    const errorMessage = error.message || '';
+
+    if (errorMessage.includes('API_KEY')) {
+      setOutput("❌ API Key không hợp lệ!\n\nVui lòng kiểm tra lại API Key trong phần Cài đặt.");
+      return;
+    }
+
+    // Check for Rate Limits (429)
+    if (errorMessage.includes('429') || errorMessage.includes('Quota exceeded')) {
+      // Show "Check Quota" link
+      toggleQuotaLink(true);
+
+      setOutput("⚠️ Quá giới hạn sử dụng!\n\nVui lòng kiểm tra hạn mức sử dụng (nút Kiểm tra bên trên) hoặc thử lại sau.");
+      return;
+    }
+
+    // Check for Server Errors (503)
+    if (errorMessage.includes('503') || errorMessage.includes('The service is currently unavailable')) {
+      if (retryCount < 2) {
+        setOutput("⌛ Máy chủ Google hiện đang bận! Đang thử lại...");
+
+        setTimeout(() => {
+          translateText(retryCount + 1);
+        }, 1000);
+        return;
+      } else {
+        setOutput("❌ Máy chủ Google hiện đang bận! Vui lòng thử lại sau.");
+        return;
+      }
+    }
+
+    // Generic Errors
+    setOutput(`❌ Lỗi khi dịch: ${errorMessage}\n\nVui lòng thử lại hoặc kiểm tra kết nối mạng.`);
+  }
+
   switchLangButton.addEventListener("click", () => {
     // prevent multiple event calls
     isSwitching = true;
-    
+
     const sourceLang = sourceLangSelect.value;
     sourceLangSelect.value = targetLangSelect.value;
 
@@ -215,7 +245,7 @@ document.addEventListener("DOMContentLoaded", function () {
     } else {
       targetLangSelect.value = targetLangSelect.value === 'vi' ? 'en' : 'vi';
     }
-    
+
     saveLanguageSettings();
 
     isSwitching = false;
@@ -231,14 +261,14 @@ document.addEventListener("DOMContentLoaded", function () {
     if (!outputText.trim()) {
       return;
     }
-    
+
     try {
       await navigator.clipboard.writeText(outputText);
 
       // Copied animation
       copiedLabel.classList.add("show");
       copiedLabel.classList.remove("hidden");
-      setTimeout(function(){
+      setTimeout(function () {
         copiedLabel.classList.remove("show");
         copiedLabel.classList.add("hidden");
       }, 2000);
@@ -256,9 +286,8 @@ function getPrompt({ text, sourceLang, targetLang }) {
   sourceLang = convertLanguage(sourceLang);
   targetLang = convertLanguage(targetLang);
 
-  let prompt = `- Yêu cầu: Dịch đoạn sau${
-    sourceLang ? " từ " + sourceLang : ""
-  } sang ${targetLang}
+  let prompt = `- Yêu cầu: Dịch đoạn sau${sourceLang ? " từ " + sourceLang : ""
+    } sang ${targetLang}
 - Lưu ý: `;
 
   prompt += `Chỉ trả về bản dịch, không kèm thông tin gì khác. `;
@@ -274,7 +303,7 @@ function getPrompt({ text, sourceLang, targetLang }) {
 function convertLanguage(language) {
   let output = "";
 
-  switch(language) {
+  switch (language) {
     case "en":
       output = "tiếng Anh";
       break;
@@ -307,7 +336,7 @@ async function translateByGemini(prompt, apiKey) {
     const genAI = new GoogleGenerativeAI(apiKey);
 
     // The Gemini 2.5-flash-lite models are versatile and work with most use cases
-    const model = genAI.getGenerativeModel({ 
+    const model = genAI.getGenerativeModel({
       model: "gemini-2.5-flash-lite",
       generationConfig: {
         temperature: 0.2,
@@ -338,9 +367,9 @@ function scrollToBottom() {
   // Scroll the container to bring the output section into view
   const outputSection = document.querySelector('.output-section');
   if (outputSection) {
-    outputSection.scrollIntoView({ 
-      behavior: 'smooth', 
-      block: 'end' 
+    outputSection.scrollIntoView({
+      behavior: 'smooth',
+      block: 'end'
     });
   }
 }
