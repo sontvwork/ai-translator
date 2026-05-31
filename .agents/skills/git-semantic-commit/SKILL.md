@@ -1,5 +1,5 @@
 ---
-name: Git Semantic Commit
+name: git-semantic-commit
 description: Analyze git changes and create a semantic commit
 ---
 
