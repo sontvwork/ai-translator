@@ -1,5 +1,5 @@
 ---
-name: Git Semantic Commit
+name: git-semantic-commit
 description: Analyze git changes and create a semantic commit
 ---
 
@@ -42,7 +42,15 @@ This skill guides the agent in analyzing git changes and creating a commit messa
     -   **Scope:** Optional but recommended (e.g., `(auth)`, `(parser)`).
     -   **Description:** Short, imperative mood (e.g., "add", "fix", "update"), no period at the end.
 
-5.  **Review and Commit**
+5.  **Check & Create Branch**
+    -   Run `git branch --show-current` to get the current branch.
+    -   **If on `main` or `master`:** You MUST create a new branch before committing.
+        -   Derive a branch name from the commit message (e.g. `feat/add-dark-mode` from `feat: add dark mode`).
+        -   Present the suggested branch name to the user for confirmation or editing.
+        -   *Action:* Run `git checkout -b <branch-name>` upon approval.
+    -   **If on any other branch:** Proceed to the next step.
+
+6.  **Review and Commit**
     -   Present the generated commit message to the user.
     -   **Ask for confirmation** or allow the user to edit the message.
     -   *Action:* Run `git commit -m "your message"` upon approval.
