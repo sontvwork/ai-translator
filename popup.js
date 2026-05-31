@@ -286,18 +286,16 @@ function getPrompt({ text, sourceLang, targetLang }) {
   sourceLang = convertLanguage(sourceLang);
   targetLang = convertLanguage(targetLang);
 
-  let prompt = `- Yêu cầu: Dịch đoạn sau${sourceLang ? " từ " + sourceLang : ""
-    } sang ${targetLang}
-- Lưu ý: `;
-
-  prompt += `Chỉ trả về bản dịch, không kèm thông tin gì khác. `;
-  prompt += `Chú ý tới văn phong cho phù hợp với đoạn văn bản.`
-  prompt += `\n- Đoạn văn bản cần dịch:\n`;
-  prompt += `\`\`\`\n`;
-  prompt += text;
-  prompt += `\n\`\`\``;
-
-  return prompt;
+  return `<instructions>
+Translate the following text${sourceLang ? ` from ${sourceLang}` : ""} into ${targetLang}.
+</instructions>
+<constraints>
+- Return only the translation, nothing else.
+- Match the tone and style appropriate to the source text.
+</constraints>
+<source_text>
+${text}
+</source_text>`;
 }
 
 function convertLanguage(language) {
