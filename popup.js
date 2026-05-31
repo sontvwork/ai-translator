@@ -1,11 +1,10 @@
 import { GoogleGenerativeAI } from "./libs/google-generative-ai.mjs";
 
 document.addEventListener("DOMContentLoaded", function () {
-  const sourceLangSelect = document.getElementById("source-lang");
   const targetLangSelect = document.getElementById("target-lang");
+  const toneSelect = document.getElementById("tone-select");
   const inputTextArea = document.getElementById("input-text");
   const outputTextArea = document.getElementById("output-text");
-  const switchLangButton = document.getElementById("switch-lang");
   const copyButton = document.getElementById("copy-button");
   const copiedLabel = document.getElementById("copied-label");
   const settingsButton = document.getElementById("settings-button");
@@ -13,7 +12,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
   let timeoutId;
   let translationDelay = 500; // default delay - matches settings default
-  let isSwitching = false; // prevent multiple event calls
 
   restoreStoredData();
 
@@ -46,8 +44,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
   function saveLanguageSettings() {
     chrome.storage.local.set({
-      sourceLang: sourceLangSelect.value,
-      targetLang: targetLangSelect.value
+      targetLang: targetLangSelect.value,
+      tone: toneSelect.value
     });
   }
 
@@ -57,15 +55,14 @@ document.addEventListener("DOMContentLoaded", function () {
     }, (syncResult) => {
       translationDelay = syncResult.translationDelay;
 
-      chrome.storage.local.get(['inputText', 'outputText', 'sourceLang', 'targetLang', 'selectedText', 'fromInPageTranslation'], (result) => {
+      chrome.storage.local.get(['inputText', 'outputText', 'targetLang', 'tone', 'selectedText', 'fromInPageTranslation'], (result) => {
         // Check if this is from in-page translation
         if (result.fromInPageTranslation && result.selectedText) {
           // Auto-fill with selected text
           inputTextArea.value = result.selectedText;
 
-          // Set source language to auto-detect
-          sourceLangSelect.value = '';
           targetLangSelect.value = result.targetLang !== undefined ? result.targetLang : 'vi';
+          toneSelect.value = result.tone !== undefined ? result.tone : 'auto';
 
           // Save the new settings
           saveInputText();
@@ -88,8 +85,8 @@ document.addEventListener("DOMContentLoaded", function () {
             autoResizeTextarea();
           }
 
-          sourceLangSelect.value = result.sourceLang !== undefined ? result.sourceLang : '';
           targetLangSelect.value = result.targetLang !== undefined ? result.targetLang : 'vi';
+          toneSelect.value = result.tone !== undefined ? result.tone : 'auto';
         }
 
         inputTextArea.focus();
@@ -100,11 +97,7 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
-  sourceLangSelect.addEventListener('change', () => {
-    if (isSwitching) {
-      return;
-    }
-
+  targetLangSelect.addEventListener('change', () => {
     saveLanguageSettings();
 
     if (inputTextArea.value.trim()) {
@@ -113,11 +106,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   });
 
-  targetLangSelect.addEventListener('change', () => {
-    if (isSwitching) {
-      return;
-    }
-
+  toneSelect.addEventListener('change', () => {
     saveLanguageSettings();
 
     if (inputTextArea.value.trim()) {
@@ -135,8 +124,8 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   async function translateText(retryCount = 0) {
-    const sourceLang = sourceLangSelect.value;
     const targetLang = targetLangSelect.value;
+    const tone = toneSelect.value;
     const text = inputTextArea.value.trim();
 
     if (!text) {
@@ -167,7 +156,7 @@ document.addEventListener("DOMContentLoaded", function () {
         outputContainer.classList.add("rainbow-loading");
       }
 
-      const prompt = getPrompt({ text, sourceLang, targetLang });
+      const prompt = getPrompt({ text, targetLang, tone });
       const response = await translateByGemini(prompt, apiKey);
 
       if (!response) {
@@ -233,29 +222,6 @@ document.addEventListener("DOMContentLoaded", function () {
     setOutput(`❌ Lỗi khi dịch: ${errorMessage}\n\nVui lòng thử lại hoặc kiểm tra kết nối mạng.`);
   }
 
-  switchLangButton.addEventListener("click", () => {
-    // prevent multiple event calls
-    isSwitching = true;
-
-    const sourceLang = sourceLangSelect.value;
-    sourceLangSelect.value = targetLangSelect.value;
-
-    if (sourceLang !== '') {
-      targetLangSelect.value = sourceLang;
-    } else {
-      targetLangSelect.value = targetLangSelect.value === 'vi' ? 'en' : 'vi';
-    }
-
-    saveLanguageSettings();
-
-    isSwitching = false;
-
-    if (outputTextArea.value !== '') {
-      inputTextArea.value = outputTextArea.value;
-      translateText();
-    }
-  });
-
   copyButton.addEventListener("click", async () => {
     const outputText = document.getElementById("output-text").value;
     if (!outputText.trim()) {
@@ -282,16 +248,22 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 });
 
-function getPrompt({ text, sourceLang, targetLang }) {
-  sourceLang = convertLanguage(sourceLang);
+const TONE_INSTRUCTIONS = {
+  auto: "Match the tone and style appropriate to the source text.",
+  formal: "Use a formal, polite tone suitable for official, business, or professional writing.",
+  casual: "Use a casual, friendly, conversational tone like chat or social media.",
+  technical: "Use a precise, technical tone; preserve technical terminology and translate closely to the literal meaning."
+};
+
+function getPrompt({ text, targetLang, tone = 'auto' }) {
   targetLang = convertLanguage(targetLang);
 
   return `<instructions>
-Translate the following text${sourceLang ? ` from ${sourceLang}` : ""} into ${targetLang}.
+Translate the following text into ${targetLang}.
 </instructions>
 <constraints>
 - Return only the translation, nothing else.
-- Match the tone and style appropriate to the source text.
+- ${TONE_INSTRUCTIONS[tone] || TONE_INSTRUCTIONS.auto}
 </constraints>
 <source_text>
 ${text}

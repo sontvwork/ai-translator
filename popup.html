@@ -16,30 +16,21 @@
     <!-- Language Selection -->
     <div class="language-selector">
       <div class="select-container">
-        <select id="source-lang" class="modern-select">
-          <option value="">🌐 Phát hiện ngôn ngữ</option>
-          <option value="en">🇺🇸 English</option>
-          <option value="vi">🇻🇳 Tiếng Việt</option>
-          <option value="ja">🇯🇵 日本語</option>
-          <option value="zh">🇨🇳 中文</option>
-          <option value="ko">🇰🇷 한국어</option>
-        </select>
-      </div>
-
-      <button id="switch-lang" class="switch-button">
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-            d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
-        </svg>
-      </button>
-
-      <div class="select-container">
         <select id="target-lang" class="modern-select">
           <option value="vi">🇻🇳 Tiếng Việt</option>
           <option value="en">🇺🇸 English</option>
           <option value="ja">🇯🇵 日本語</option>
           <option value="zh">🇨🇳 中文</option>
           <option value="ko">🇰🇷 한국어</option>
+        </select>
+      </div>
+
+      <div class="select-container">
+        <select id="tone-select" class="modern-select">
+          <option value="auto">✨ Tone gốc</option>
+          <option value="formal">💼 Trang trọng – Công văn, văn phòng</option>
+          <option value="casual">😊 Thân mật – Chat, mạng xã hội</option>
+          <option value="technical">⚙️ Kỹ thuật – Giữ thuật ngữ</option>
         </select>
       </div>
     </div>

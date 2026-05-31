@@ -137,35 +137,6 @@ html::-webkit-scrollbar {
   box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1), 0 8px 24px rgba(102, 126, 234, 0.15);
 }
 
-.switch-button {
-  padding: 10px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  border: none;
-  border-radius: 50%;
-  color: white;
-  cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 40px;
-  max-width: 40px;
-  min-height: 40px;
-  max-height: 40px;
-  flex-shrink: 0;
-  margin-left: 10px;
-  margin-right: 10px;
-}
-
-.switch-button:hover {
-  transform: rotate(180deg) scale(1.1);
-}
-
-.switch-button:active {
-  transform: rotate(180deg) scale(0.95);
-}
-
 /* Sections */
 .input-section, .output-section {
   margin-bottom: 20px;
