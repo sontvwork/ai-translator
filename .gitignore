@@ -1,6 +1,17 @@
+# IDEs & Editors
+.idea/
+.vscode/
+.vcopilot/tasks/
+
+# MacOS
 .DS_Store
-.vscode
-.idea
-.cursor
-.cursorrules
-.roo
+**/.DS_Store
+**/.DS_Store/
+
+# Windows
+Thumbs.db
+ehthumbs.db
+
+# Local config files
+**/*.local.json
+~                     
