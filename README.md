@@ -1,4 +1,4 @@
-# AI Translator using Google Gemini
+# AI Translator using Groq or OpenRouter
 
 ## Chrome Web Store
 

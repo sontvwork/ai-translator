@@ -1,8 +1,8 @@
 {
     "manifest_version": 3,
     "name": "AI Translator",
-    "description": "Translate text using Google Gemini",
-    "version": "3.0",
+    "description": "Translate text using AI",
+    "version": "4.0",
     "icons": {
         "32": "assets/favicon32.png",
         "48": "assets/favicon48.png",
@@ -16,6 +16,10 @@
     "permissions": [
         "storage",
         "activeTab"
+    ],
+    "host_permissions": [
+        "https://api.groq.com/*",
+        "https://openrouter.ai/*"
     ],
     "content_scripts": [
         {

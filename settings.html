@@ -25,41 +25,98 @@
         
         <div class="settings-content">
             <div class="setting-group">
-                <label class="setting-label">🔑 Google Gemini API Key</label>
-                <p class="setting-description">
-                    Nhập API Key của Google Gemini để sử dụng tính năng dịch. Bạn có thể tạo API Key miễn phí tại Google AI Studio.
-                </p>
-                <div class="setting-guide">
-                    <h4 style="color: #4c51bf; font-weight: 600; margin: 0 0 8px 0; font-size: 14px;">✨ Tại sao nên dùng API Key riêng?</h4>
-                    <ul style="margin: 0; padding-left: 16px; color: #5a67d8; font-size: 13px; line-height: 1.5;">
-                        <li><strong>Không giới hạn:</strong> Dịch không giới hạn số lần trong ngày</li>
-                        <li><strong>Nhanh và ổn định:</strong> Không bị giới hạn bởi server của extension</li>
-                        <li><strong>Riêng tư và bảo mật:</strong> API Key chỉ lưu trữ trên máy của bạn</li>
-                        <li><strong>Miễn phí:</strong> Google cho phép tạo API Key hoàn toàn miễn phí</li>
-                    </ul>
-                    <div style="margin-top: 12px; padding: 8px 12px; background: rgba(255,255,255,0.7); border-radius: 8px; font-size: 12px; color: #553c9a;">
-                        <strong>💡 Cách tạo:</strong> Truy cập link bên dưới → Đăng nhập Google → Nhấn "Create API Key" → Copy và dán vào đây
+                <div class="setting-group-header">
+                    <div class="setting-icon">🤖</div>
+                    <div>
+                        <label class="setting-label">Nhà cung cấp AI</label>
+                        <p class="setting-description">
+                            Chọn nhà cung cấp dùng để dịch — chỉ một hoạt động tại một thời điểm.
+                        </p>
                     </div>
                 </div>
-                <div class="api-key-creation-url" style="margin-top: 8px;">
-                    <a href="https://aistudio.google.com/app/apikey" target="_blank" style="color: #667eea; text-decoration: none;">
-                        🔗 Tạo API Key tại Google AI Studio
-                    </a>
+                <div class="provider-cards">
+                    <label class="provider-card" id="provider-card-groq">
+                        <input type="radio" name="provider" value="groq" checked>
+                        <span class="provider-card-name">Groq</span>
+                        <span class="provider-card-subtitle">Nhanh · Miễn phí</span>
+                    </label>
+                    <label class="provider-card" id="provider-card-openrouter">
+                        <input type="radio" name="provider" value="openrouter">
+                        <span class="provider-card-name">OpenRouter</span>
+                        <span class="provider-card-subtitle">Nhiều Model</span>
+                    </label>
                 </div>
-                <div class="api-key-container">
-                    <input 
-                        type="password" 
-                        id="api-key" 
-                        class="modern-input" 
-                        placeholder="Nhập Google Gemini API Key..."
-                        style="padding-right: 50px;"
+
+                <hr class="setting-divider">
+
+                <div id="groq-settings">
+                    <div class="setting-label-row">
+                        <label class="setting-label">🔑 API Keys (Groq)</label>
+                        <span class="api-key-badge" id="groq-key-count">1/5</span>
+                    </div>
+                    <p class="setting-description">
+                        Nhập tối đa 5 keys. Extension sẽ tự động xoay vòng để tránh bị giới hạn quota.<br/>
+                        Lưu ý các API Key trong cùng một account sẽ chia sẻ quota. Bạn cần tạo nhiều account.
+                    </p>
+                    <div class="api-key-list" id="groq-key-list"></div>
+                    <button type="button" class="add-key-button" id="add-groq-key">➕ Thêm API Key</button>
+                    <div class="api-key-creation-url" style="margin-top: 8px;">
+                        <a href="https://console.groq.com/keys" target="_blank" style="color: #667eea; text-decoration: none;">
+                            🔗 Tạo API Key tại Groq Console (Miễn phí)
+                        </a>
+                    </div>
+
+                    <hr class="setting-divider">
+
+                    <label class="setting-label" for="groq-model">🧠 Model</label>
+                    <input
+                        type="text"
+                        id="groq-model"
+                        class="modern-input"
+                        list="groq-models"
+                        placeholder="openai/gpt-oss-120b"
                     >
-                    <button type="button" class="toggle-password" id="toggle-password">
-                        👁️
-                    </button>
+                    <datalist id="groq-models">
+                        <option value="openai/gpt-oss-120b"></option>
+                        <option value="openai/gpt-oss-20b"></option>
+                        <option value="llama-3.3-70b-versatile"></option>
+                    </datalist>
+                </div>
+
+                <div id="openrouter-settings" hidden>
+                    <div class="setting-label-row">
+                        <label class="setting-label">🔑 API Keys (OpenRouter)</label>
+                        <span class="api-key-badge" id="openrouter-key-count">1/5</span>
+                    </div>
+                    <p class="setting-description">
+                        Nhập tối đa 5 keys. Extension sẽ tự động xoay vòng để tránh bị giới hạn quota.<br/>
+                        Lưu ý các API Key trong cùng một account sẽ chia sẻ quota. Bạn cần tạo nhiều account.
+                    </p>
+                    <div class="api-key-list" id="openrouter-key-list"></div>
+                    <button type="button" class="add-key-button" id="add-openrouter-key">➕ Thêm API Key</button>
+                    <div class="api-key-creation-url" style="margin-top: 8px;">
+                        <a href="https://openrouter.ai/keys" target="_blank" style="color: #667eea; text-decoration: none;">
+                            🔗 Tạo API Key tại OpenRouter
+                        </a>
+                    </div>
+
+                    <hr class="setting-divider">
+
+                    <label class="setting-label" for="openrouter-model">🧠 Model</label>
+                    <input
+                        type="text"
+                        id="openrouter-model"
+                        class="modern-input"
+                        list="openrouter-models"
+                        placeholder="google/gemini-2.5-flash-lite"
+                    >
+                    <datalist id="openrouter-models">
+                        <option value="google/gemini-2.5-flash-lite"></option>
+                        <option value="inclusionai/ling-2.6-flash"></option>
+                    </datalist>
                 </div>
             </div>
-            
+
             <div class="setting-group">
                 <label class="setting-label">⏱️ Độ trễ dịch tự động</label>
                 <p class="setting-description">
@@ -100,6 +157,6 @@
         </div>
     </div>
     
-    <script src="settings.js"></script>
+    <script type="module" src="settings.js"></script>
 </body>
 </html> 
