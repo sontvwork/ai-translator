@@ -1,4 +1,4 @@
-import { GoogleGenerativeAI } from "./libs/google-generative-ai.mjs";
+import { loadProviderSettings, translate, getApiKeys, getProviderName } from "./providers.js";
 
 document.addEventListener("DOMContentLoaded", function () {
   const targetLangSelect = document.getElementById("target-lang");
@@ -115,14 +115,6 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   });
 
-  async function getApiKey() {
-    const apiKeyResult = await new Promise((resolve) => {
-      chrome.storage.sync.get(['apiKey'], resolve);
-    });
-
-    return apiKeyResult.apiKey ? apiKeyResult.apiKey.trim() : '';
-  }
-
   async function translateText(retryCount = 0) {
     const targetLang = targetLangSelect.value;
     const tone = toneSelect.value;
@@ -139,9 +131,9 @@ document.addEventListener("DOMContentLoaded", function () {
       return;
     }
 
-    const apiKey = await getApiKey();
+    const settings = await loadProviderSettings();
 
-    if (!apiKey) {
+    if (getApiKeys(settings).length === 0) {
       setOutput("❌ Chưa cài đặt API Key!\n\nVui lòng nhấn vào nút cài đặt và làm theo hướng dẫn");
       return;
     }
@@ -157,11 +149,12 @@ document.addEventListener("DOMContentLoaded", function () {
       }
 
       const prompt = getPrompt({ text, targetLang, tone });
-      const response = await translateByGemini(prompt, apiKey);
-
-      if (!response) {
-        throw new Error("Network response was not ok");
-      }
+      const response = await translate(prompt, settings, (partialText) => {
+        // First token arrived: stop the loading effect and show the stream
+        outputContainer.classList.remove("rainbow-loading");
+        outputTextArea.value = partialText;
+        autoResizeTextarea();
+      });
 
       setOutput(response);
 
@@ -169,16 +162,22 @@ document.addEventListener("DOMContentLoaded", function () {
       scrollToBottom();
     } catch (error) {
       console.error("Error:", error);
-      handleGeminiError(error, retryCount);
+      handleTranslateError(error, settings.provider, retryCount);
     } finally {
       const outputContainer = document.querySelector(".output-section .textarea-container");
       outputContainer.classList.remove("rainbow-loading");
     }
   }
 
-  function toggleQuotaLink(show) {
+  const QUOTA_URLS = {
+    groq: 'https://console.groq.com/settings/limits',
+    openrouter: 'https://openrouter.ai/activity'
+  };
+
+  function toggleQuotaLink(show, provider) {
     if (typeof checkQuotaLink !== 'undefined' && checkQuotaLink) {
       if (show) {
+        checkQuotaLink.href = QUOTA_URLS[provider] || QUOTA_URLS.groq;
         checkQuotaLink.classList.remove('hidden');
       } else {
         checkQuotaLink.classList.add('hidden');
@@ -186,40 +185,56 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   }
 
-  function handleGeminiError(error, retryCount) {
-    const errorMessage = error.message || '';
+  function handleTranslateError(error, provider, retryCount) {
+    const providerName = getProviderName(provider);
 
-    if (errorMessage.includes('API_KEY')) {
-      setOutput("❌ API Key không hợp lệ!\n\nVui lòng kiểm tra lại API Key trong phần Cài đặt.");
-      return;
-    }
-
-    // Check for Rate Limits (429)
-    if (errorMessage.includes('429') || errorMessage.includes('Quota exceeded')) {
-      // Show "Check Quota" link
-      toggleQuotaLink(true);
-
-      setOutput("⚠️ Quá giới hạn sử dụng!\n\nVui lòng kiểm tra hạn mức sử dụng (nút Kiểm tra bên trên) hoặc thử lại sau.");
-      return;
-    }
-
-    // Check for Server Errors (503)
-    if (errorMessage.includes('503') || errorMessage.includes('The service is currently unavailable')) {
-      if (retryCount < 2) {
-        setOutput("⌛ Máy chủ Google hiện đang bận! Đang thử lại...");
-
-        setTimeout(() => {
-          translateText(retryCount + 1);
-        }, 1000);
+    switch (error.code) {
+      case 'API_KEY_MISSING':
+        setOutput("❌ Chưa cài đặt API Key!\n\nVui lòng nhấn vào nút cài đặt và làm theo hướng dẫn");
         return;
-      } else {
-        setOutput("❌ Máy chủ Google hiện đang bận! Vui lòng thử lại sau.");
+
+      case 'API_KEY_INVALID': {
+        const keyLabel = error.keyIndex >= 0 ? ` (Key số ${error.keyIndex + 1})` : '';
+        setOutput(`❌ API Key không hợp lệ!${keyLabel}\n\nVui lòng kiểm tra lại API Key trong phần Cài đặt.`);
         return;
       }
-    }
 
-    // Generic Errors
-    setOutput(`❌ Lỗi khi dịch: ${errorMessage}\n\nVui lòng thử lại hoặc kiểm tra kết nối mạng.`);
+      case 'RATE_LIMIT': {
+        toggleQuotaLink(true, provider);
+        const waitTime = formatDuration(error.retryAfterMs);
+
+        if (error.scope === 'day') {
+          setOutput(`⚠️ Đã hết hạn mức trong ngày!\n\nTất cả API Key ${providerName} đã chạm giới hạn theo ngày. Key khả dụng lại sau ~${waitTime}.`);
+        } else {
+          setOutput(`⚠️ Quá giới hạn theo phút!\n\nTất cả API Key ${providerName} đang bị giới hạn. Vui lòng thử lại sau ~${waitTime}.`);
+        }
+        return;
+      }
+
+      case 'NO_CREDITS':
+        setOutput("❌ Tài khoản OpenRouter đã hết credits!\n\nVui lòng nạp thêm tại openrouter.ai/credits");
+        return;
+
+      case 'MODEL_INVALID':
+        setOutput(`❌ Model không hợp lệ!\n\nVui lòng kiểm tra lại tên model ${providerName} trong phần Cài đặt.`);
+        return;
+
+      case 'SERVER_ERROR':
+        if (retryCount < 2) {
+          setOutput(`⌛ Máy chủ ${providerName} hiện đang bận! Đang thử lại...`);
+
+          setTimeout(() => {
+            translateText(retryCount + 1);
+          }, 1000);
+        } else {
+          setOutput(`❌ Máy chủ ${providerName} hiện đang bận! Vui lòng thử lại sau.`);
+        }
+        return;
+
+      // Generic Errors
+      default:
+        setOutput(`❌ Lỗi khi dịch: ${error.message || ''}\n\nVui lòng thử lại hoặc kiểm tra kết nối mạng.`);
+    }
   }
 
   copyButton.addEventListener("click", async () => {
@@ -297,33 +312,16 @@ function convertLanguage(language) {
   return output;
 }
 
-async function translateByGemini(prompt, apiKey) {
-  try {
-    if (!apiKey || apiKey.trim() === '') {
-      throw new Error('API_KEY_MISSING');
-    }
-
-    const genAI = new GoogleGenerativeAI(apiKey);
-
-    // The Gemini 2.5-flash-lite models are versatile and work with most use cases
-    const model = genAI.getGenerativeModel({
-      model: "gemini-2.5-flash-lite",
-      generationConfig: {
-        temperature: 0.2,
-      },
-    });
-
-    const result = await model.generateContent(prompt);
-    const response = await result.response;
-    const responseText = response.text().trim().replace(/,$/, '');
-    return responseText;
-  } catch (error) {
-    console.log(error);
-    if (error.message && error.message.includes('API key')) {
-      throw new Error('API_KEY_INVALID');
-    }
-    throw error;
+function formatDuration(ms) {
+  const seconds = Math.ceil((ms || 60000) / 1000);
+  if (seconds < 90) {
+    return `${seconds} giây`;
   }
+  const minutes = Math.ceil(seconds / 60);
+  if (minutes < 90) {
+    return `${minutes} phút`;
+  }
+  return `${Math.ceil(minutes / 60)} giờ`;
 }
 
 function autoResizeTextarea() {
