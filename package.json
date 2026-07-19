@@ -1,0 +1,15 @@
+{
+  "name": "ai-translator-extension",
+  "version": "4.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "pretest": "node scripts/check-test-catalog.mjs",
+    "test": "playwright test",
+    "test:smoke": "playwright test --grep @smoke",
+    "check:catalog": "node scripts/check-test-catalog.mjs"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.56"
+  }
+}

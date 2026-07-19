@@ -5,13 +5,18 @@ description: Launch and drive this Chrome extension end-to-end with Playwright t
 
 # Verify AI Translator extension
 
+## Regression suite first
+
+The launch/mock techniques below are already implemented as reusable fixtures in `tests/helpers/` (`extension-fixtures.js`, `provider-mock.js`, `storage.js`) — reuse them instead of writing ad-hoc scripts. For regression checks run `npm test`, a single spec (`npx playwright test tests/e2e/popup.spec.js`), or `npm run test:smoke`. Test catalog: `docs/test-cases.md`.
+
 ## Launch
 
-Branded Chrome 137+ dropped `--load-extension`; use Playwright's bundled Chromium, headed (extensions don't load in headless here):
+Branded Chrome 137+ dropped `--load-extension`; use Playwright's bundled Chromium. The full browser in new-headless mode loads extensions (`channel: 'chromium'`, works without a display); the headless shell does not. `HEADED=1` for a visible window:
 
 ```js
 const context = await chromium.launchPersistentContext(tmpProfileDir, {
-  headless: false,
+  headless: true,
+  channel: 'chromium', // full browser in new-headless mode; omit when headed
   args: [`--disable-extensions-except=${EXT_PATH}`, `--load-extension=${EXT_PATH}`]
 });
 ```

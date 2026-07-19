@@ -14,4 +14,9 @@ ehthumbs.db
 
 # Local config files
 **/*.local.json
-~                     
+~
+
+# Node / Playwright
+node_modules/
+test-results/
+playwright-report/
