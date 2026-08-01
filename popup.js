@@ -9,9 +9,18 @@ document.addEventListener("DOMContentLoaded", function () {
   const copiedLabel = document.getElementById("copied-label");
   const settingsButton = document.getElementById("settings-button");
   const checkQuotaLink = document.getElementById("check-quota-link");
+  const historyButton = document.getElementById("history-button");
+  const historyPopover = document.getElementById("history-popover");
+  const historyList = document.getElementById("history-list");
+  const historyClearButton = document.getElementById("history-clear-button");
 
   let timeoutId;
   let translationDelay = 500; // default delay - matches settings default
+  let clearConfirmTimeoutId;
+  let renderedHistory = []; // records currently shown, keeps click indices in sync
+
+  setupSelectPopover(targetLangSelect);
+  setupSelectPopover(toneSelect);
 
   restoreStoredData();
 
@@ -157,6 +166,7 @@ document.addEventListener("DOMContentLoaded", function () {
       });
 
       setOutput(response);
+      saveToHistory(text, response);
 
       autoResizeTextarea();
       scrollToBottom();
@@ -167,6 +177,35 @@ document.addEventListener("DOMContentLoaded", function () {
       const outputContainer = document.querySelector(".output-section .textarea-container");
       outputContainer.classList.remove("rainbow-loading");
     }
+  }
+
+  function saveToHistory(source, translated) {
+    if (!source || !translated || !translated.trim()) {
+      return;
+    }
+
+    chrome.storage.local.get({ translationHistory: [] }, (result) => {
+      const history = Array.isArray(result.translationHistory) ? result.translationHistory : [];
+      const record = { source, translated, timestamp: Date.now() };
+      const newest = history[0];
+
+      if (newest && (newest.source.startsWith(source) || source.startsWith(newest.source))) {
+        // Typing continuation: replace newest instead of adding
+        history[0] = record;
+      } else {
+        const dupIndex = history.findIndex((item) => item.source === source);
+        if (dupIndex !== -1) {
+          history.splice(dupIndex, 1);
+        }
+        history.unshift(record);
+      }
+
+      chrome.storage.local.set({ translationHistory: history.slice(0, 5) }, () => {
+        if (!historyPopover.classList.contains("hidden")) {
+          renderHistory();
+        }
+      });
+    });
   }
 
   const QUOTA_URLS = {
@@ -252,7 +291,7 @@ document.addEventListener("DOMContentLoaded", function () {
       setTimeout(function () {
         copiedLabel.classList.remove("show");
         copiedLabel.classList.add("hidden");
-      }, 2000);
+      }, 1000);
     } catch (err) {
       console.error("Failed to copy text: ", err);
     }
@@ -261,7 +300,224 @@ document.addEventListener("DOMContentLoaded", function () {
   settingsButton.addEventListener("click", () => {
     chrome.runtime.openOptionsPage();
   });
+
+  function renderHistory() {
+    chrome.storage.local.get({ translationHistory: [] }, (result) => {
+      renderedHistory = Array.isArray(result.translationHistory) ? result.translationHistory : [];
+      historyList.replaceChildren();
+
+      if (renderedHistory.length === 0) {
+        const empty = document.createElement("div");
+        empty.className = "history-empty";
+        empty.textContent = "Chưa có lịch sử dịch";
+        historyList.appendChild(empty);
+        return;
+      }
+
+      renderedHistory.forEach((record, index) => {
+        const item = document.createElement("button");
+        item.type = "button";
+        item.className = "history-item";
+        item.dataset.index = index;
+
+        const top = document.createElement("div");
+        top.className = "history-item-top";
+
+        const source = document.createElement("span");
+        source.className = "history-item-source";
+        source.textContent = record.source;
+
+        const time = document.createElement("span");
+        time.className = "history-item-time";
+        time.textContent = formatRelativeTime(record.timestamp);
+
+        top.append(source, time);
+
+        const translated = document.createElement("div");
+        translated.className = "history-item-translated";
+        translated.textContent = record.translated;
+
+        item.append(top, translated);
+        historyList.appendChild(item);
+      });
+    });
+  }
+
+  function openHistoryPopover() {
+    renderHistory();
+    historyPopover.classList.remove("hidden");
+  }
+
+  function closeHistoryPopover() {
+    historyPopover.classList.add("hidden");
+    resetClearConfirm();
+  }
+
+  historyButton.addEventListener("click", () => {
+    if (historyPopover.classList.contains("hidden")) {
+      openHistoryPopover();
+    } else {
+      closeHistoryPopover();
+    }
+  });
+
+  document.addEventListener("click", (event) => {
+    if (historyPopover.classList.contains("hidden")) {
+      return;
+    }
+    if (historyPopover.contains(event.target) || historyButton.contains(event.target)) {
+      return;
+    }
+    closeHistoryPopover();
+  });
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && !historyPopover.classList.contains("hidden")) {
+      closeHistoryPopover();
+    }
+  });
+
+  historyList.addEventListener("click", (event) => {
+    const item = event.target.closest(".history-item");
+    if (!item) {
+      return;
+    }
+
+    const record = renderedHistory[Number(item.dataset.index)];
+    if (!record) {
+      return;
+    }
+
+    clearTimeout(timeoutId); // cancel pending debounce so it can't re-translate
+    inputTextArea.value = record.source;
+    saveInputText();
+    setOutput(record.translated);
+    autoResizeTextarea();
+    closeHistoryPopover();
+  });
+
+  function resetClearConfirm() {
+    clearTimeout(clearConfirmTimeoutId);
+    historyClearButton.classList.remove("confirming");
+    historyClearButton.textContent = "Xóa hết";
+  }
+
+  historyClearButton.addEventListener("click", () => {
+    if (historyClearButton.classList.contains("confirming")) {
+      chrome.storage.local.set({ translationHistory: [] }, () => {
+        resetClearConfirm();
+        renderHistory();
+      });
+    } else {
+      historyClearButton.classList.add("confirming");
+      historyClearButton.textContent = "Xác nhận?";
+      clearConfirmTimeoutId = setTimeout(resetClearConfirm, 3000);
+    }
+  });
 });
+
+const selectPopoverClosers = [];
+
+// Replaces the native dropdown of a <select> with a custom popover.
+// The <select> stays as the trigger and source of truth, so .value,
+// change events and programmatic restores keep working unchanged.
+function setupSelectPopover(select) {
+  const container = select.parentElement;
+  const popover = document.createElement("div");
+  popover.className = "select-popover hidden";
+
+  Array.from(select.options).forEach((option) => {
+    const item = document.createElement("button");
+    item.type = "button";
+    item.className = "select-popover-item";
+    item.dataset.value = option.value;
+    item.textContent = option.textContent;
+    popover.appendChild(item);
+  });
+
+  container.appendChild(popover);
+
+  function syncSelectedItem() {
+    popover.querySelectorAll(".select-popover-item").forEach((item) => {
+      item.classList.toggle("selected", item.dataset.value === select.value);
+    });
+  }
+
+  function openPopover() {
+    selectPopoverClosers.forEach((closeOther) => closeOther());
+    syncSelectedItem();
+    popover.classList.remove("hidden");
+  }
+
+  function closePopover() {
+    popover.classList.add("hidden");
+  }
+
+  function togglePopover() {
+    if (popover.classList.contains("hidden")) {
+      openPopover();
+    } else {
+      closePopover();
+    }
+  }
+
+  selectPopoverClosers.push(closePopover);
+
+  select.addEventListener("mousedown", (event) => {
+    event.preventDefault(); // block the native dropdown
+    select.focus();
+    togglePopover();
+  });
+
+  select.addEventListener("keydown", (event) => {
+    const isToggleKey = event.key === "Enter" || event.key === " " ||
+      (event.altKey && (event.key === "ArrowDown" || event.key === "ArrowUp"));
+
+    if (isToggleKey) {
+      event.preventDefault();
+      togglePopover();
+      return;
+    }
+
+    if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+      // Keep arrow-key value cycling without opening the native picker
+      event.preventDefault();
+      const nextIndex = select.selectedIndex + (event.key === "ArrowDown" ? 1 : -1);
+      if (nextIndex >= 0 && nextIndex < select.options.length) {
+        select.selectedIndex = nextIndex;
+        select.dispatchEvent(new Event("change", { bubbles: true }));
+      }
+    }
+  });
+
+  select.addEventListener("change", syncSelectedItem);
+
+  popover.addEventListener("click", (event) => {
+    const item = event.target.closest(".select-popover-item");
+    if (!item) {
+      return;
+    }
+
+    if (select.value !== item.dataset.value) {
+      select.value = item.dataset.value;
+      select.dispatchEvent(new Event("change", { bubbles: true }));
+    }
+    closePopover();
+  });
+
+  document.addEventListener("click", (event) => {
+    if (popover.classList.contains("hidden") || container.contains(event.target)) {
+      return;
+    }
+    closePopover();
+  });
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && !popover.classList.contains("hidden")) {
+      closePopover();
+    }
+  });
+}
 
 const TONE_INSTRUCTIONS = {
   auto: "Match the tone and style appropriate to the source text.",
@@ -324,6 +580,34 @@ function formatDuration(ms) {
   return `${Math.ceil(minutes / 60)} giờ`;
 }
 
+function formatRelativeTime(timestamp) {
+  const diffMs = Date.now() - timestamp;
+  const minutes = Math.floor(diffMs / 60000);
+
+  if (minutes < 1) {
+    return "vừa xong";
+  }
+
+  const rtf = new Intl.RelativeTimeFormat("vi", { numeric: "auto" });
+
+  if (minutes < 60) {
+    return rtf.format(-minutes, "minute");
+  }
+
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) {
+    return rtf.format(-hours, "hour");
+  }
+
+  const days = Math.floor(hours / 24);
+  if (days <= 3) {
+    return rtf.format(-days, "day");
+  }
+
+  const date = new Date(timestamp);
+  return `${String(date.getDate()).padStart(2, "0")}/${String(date.getMonth() + 1).padStart(2, "0")}`;
+}
+
 function autoResizeTextarea() {
   const textarea = document.getElementById("output-text");
   textarea.style.height = "auto";
@@ -332,12 +616,18 @@ function autoResizeTextarea() {
 }
 
 function scrollToBottom() {
-  // Scroll the container to bring the output section into view
-  const outputSection = document.querySelector('.output-section');
-  if (outputSection) {
-    outputSection.scrollIntoView({
-      behavior: 'smooth',
-      block: 'end'
+  // The popup has two clipped scrollers: .container (overflow-y: auto) and the
+  // popup viewport (Chrome caps the window at 600px while .container can be
+  // taller). Scroll both all the way down.
+  const container = document.querySelector('.container');
+  if (container) {
+    container.scrollTo({
+      top: container.scrollHeight,
+      behavior: 'smooth'
     });
   }
+  window.scrollTo({
+    top: document.documentElement.scrollHeight,
+    behavior: 'smooth'
+  });
 }
