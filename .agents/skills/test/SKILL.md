@@ -1,8 +1,6 @@
 ---
 name: test
 description: Checkpoint hoàn tất chức năng — đối chiếu diff với catalog test case, bổ sung test cho hành vi mới, chạy toàn bộ regression suite và báo cáo. Người dùng chủ động gọi khi kết thúc một chức năng, KHÔNG tự chạy sau mỗi edit.
-user-invocable: true
-disable-model-invocation: true
 ---
 
 # Checkpoint test — quy trình
