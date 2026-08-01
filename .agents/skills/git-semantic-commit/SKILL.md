@@ -1,6 +1,6 @@
 ---
 name: git-semantic-commit
-description: Analyze git changes and create a semantic commit
+description: Use when the user says "commit" or asks to commit/save changes to git. Creates a Conventional Commits message.
 ---
 
 # Git Semantic Commit Skill
