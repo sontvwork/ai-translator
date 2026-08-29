@@ -1,4 +1,5 @@
 import { loadProviderSettings, translate, getApiKeys, getProviderName } from "./providers.js";
+import { NOTIFICATIONS } from "./notifications.js";
 
 document.addEventListener("DOMContentLoaded", function () {
   const targetLangSelect = document.getElementById("target-lang");
@@ -13,6 +14,16 @@ document.addEventListener("DOMContentLoaded", function () {
   const historyPopover = document.getElementById("history-popover");
   const historyList = document.getElementById("history-list");
   const historyClearButton = document.getElementById("history-clear-button");
+  const notificationsButton = document.getElementById("notifications-button");
+  const notificationsBadge = document.getElementById("notifications-badge");
+  const notificationsPopover = document.getElementById("notifications-popover");
+  const notificationsList = document.getElementById("notifications-list");
+  const notificationsListView = document.getElementById("notifications-list-view");
+  const notificationsDetailView = document.getElementById("notifications-detail-view");
+  const notificationsDetailTitle = document.getElementById("notifications-detail-title");
+  const notificationsDetailContent = document.getElementById("notifications-detail-content");
+  const notificationsBackButton = document.getElementById("notifications-back-button");
+  const notificationsMarkReadButton = document.getElementById("notifications-mark-read-button");
 
   let timeoutId;
   let translationDelay = 500; // default delay - matches settings default
@@ -23,6 +34,7 @@ document.addEventListener("DOMContentLoaded", function () {
   setupSelectPopover(toneSelect);
 
   restoreStoredData();
+  updateNotificationsBadge();
 
   inputTextArea.addEventListener("input", () => {
     clearTimeout(timeoutId);
@@ -344,6 +356,7 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   function openHistoryPopover() {
+    closeNotificationsPopover();
     renderHistory();
     historyPopover.classList.remove("hidden");
   }
@@ -362,18 +375,24 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 
   document.addEventListener("click", (event) => {
-    if (historyPopover.classList.contains("hidden")) {
-      return;
+    if (!historyPopover.classList.contains("hidden")
+      && !historyPopover.contains(event.target) && !historyButton.contains(event.target)) {
+      closeHistoryPopover();
     }
-    if (historyPopover.contains(event.target) || historyButton.contains(event.target)) {
-      return;
+    if (!notificationsPopover.classList.contains("hidden")
+      && !notificationsPopover.contains(event.target) && !notificationsButton.contains(event.target)) {
+      closeNotificationsPopover();
     }
-    closeHistoryPopover();
   });
 
   document.addEventListener("keydown", (event) => {
-    if (event.key === "Escape" && !historyPopover.classList.contains("hidden")) {
-      closeHistoryPopover();
+    if (event.key === "Escape") {
+      if (!historyPopover.classList.contains("hidden")) {
+        closeHistoryPopover();
+      }
+      if (!notificationsPopover.classList.contains("hidden")) {
+        closeNotificationsPopover();
+      }
     }
   });
 
@@ -413,6 +432,125 @@ document.addEventListener("DOMContentLoaded", function () {
       historyClearButton.textContent = "Xác nhận?";
       clearConfirmTimeoutId = setTimeout(resetClearConfirm, 3000);
     }
+  });
+
+  function updateNotificationsBadge() {
+    chrome.storage.local.get({ readNotificationIds: [] }, (result) => {
+      const readIds = Array.isArray(result.readNotificationIds) ? result.readNotificationIds : [];
+      const unread = NOTIFICATIONS.filter((n) => !readIds.includes(n.id)).length;
+      if (unread === 0) {
+        notificationsBadge.classList.add("hidden");
+      } else {
+        notificationsBadge.textContent = unread;
+        notificationsBadge.classList.remove("hidden");
+      }
+    });
+  }
+
+  function renderNotifications() {
+    notificationsList.replaceChildren();
+
+    if (NOTIFICATIONS.length === 0) {
+      const empty = document.createElement("div");
+      empty.className = "history-empty";
+      empty.textContent = "Chưa có thông báo";
+      notificationsList.appendChild(empty);
+      return;
+    }
+
+    chrome.storage.local.get({ readNotificationIds: [] }, (result) => {
+      const readIds = Array.isArray(result.readNotificationIds) ? result.readNotificationIds : [];
+      const sorted = [...NOTIFICATIONS].sort((a, b) => b.id - a.id);
+
+      sorted.forEach((notification) => {
+        const item = document.createElement("button");
+        item.type = "button";
+        item.className = "history-item";
+        if (readIds.includes(notification.id)) {
+          item.classList.add("is-read");
+        }
+        item.dataset.id = notification.id;
+
+        const title = document.createElement("span");
+        title.className = "history-item-source";
+        title.textContent = notification.title;
+
+        const content = document.createElement("div");
+        content.className = "history-item-translated";
+        content.textContent = notification.content;
+
+        item.appendChild(title);
+        item.appendChild(content);
+        notificationsList.appendChild(item);
+      });
+    });
+  }
+
+  function markNotificationRead(id) {
+    chrome.storage.local.get({ readNotificationIds: [] }, (result) => {
+      const readIds = Array.isArray(result.readNotificationIds) ? result.readNotificationIds : [];
+      if (readIds.includes(id)) {
+        return;
+      }
+      readIds.push(id);
+      chrome.storage.local.set({ readNotificationIds: readIds }, updateNotificationsBadge);
+    });
+  }
+
+  function showNotificationListView() {
+    notificationsDetailView.classList.add("hidden");
+    notificationsListView.classList.remove("hidden");
+  }
+
+  function showNotificationDetail(id) {
+    const notification = NOTIFICATIONS.find((n) => n.id === id);
+    if (!notification) {
+      return;
+    }
+    notificationsDetailTitle.textContent = notification.title;
+    notificationsDetailContent.textContent = notification.content;
+    notificationsListView.classList.add("hidden");
+    notificationsDetailView.classList.remove("hidden");
+    markNotificationRead(notification.id);
+  }
+
+  function openNotificationsPopover() {
+    closeHistoryPopover();
+    showNotificationListView();
+    renderNotifications();
+    notificationsPopover.classList.remove("hidden");
+  }
+
+  function closeNotificationsPopover() {
+    notificationsPopover.classList.add("hidden");
+  }
+
+  notificationsButton.addEventListener("click", () => {
+    if (notificationsPopover.classList.contains("hidden")) {
+      openNotificationsPopover();
+    } else {
+      closeNotificationsPopover();
+    }
+  });
+
+  notificationsList.addEventListener("click", (event) => {
+    const item = event.target.closest(".history-item");
+    if (!item) {
+      return;
+    }
+    showNotificationDetail(Number(item.dataset.id));
+  });
+
+  notificationsBackButton.addEventListener("click", () => {
+    showNotificationListView();
+    renderNotifications();
+  });
+
+  notificationsMarkReadButton.addEventListener("click", () => {
+    chrome.storage.local.set({ readNotificationIds: NOTIFICATIONS.map((n) => n.id) }, () => {
+      updateNotificationsBadge();
+      renderNotifications();
+    });
   });
 });
 

@@ -13,6 +13,7 @@ const PREFIX_TO_SPEC = {
   SET: 'settings.spec.js',
   ERR: 'errors.spec.js',
   HIS: 'history.spec.js',
+  NOT: 'notifications.spec.js',
   CS: 'content-script.spec.js'
 };
 

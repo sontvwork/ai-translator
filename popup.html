@@ -42,6 +42,14 @@
           </svg>
         </button>
         <span class="toolbar-divider"></span>
+        <button id="notifications-button" class="icon-button" title="Thông báo">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+          </svg>
+          <span id="notifications-badge" class="notifications-badge hidden"></span>
+        </button>
+        <span class="toolbar-divider"></span>
         <button id="settings-button" class="icon-button" title="Mở cài đặt">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -59,6 +67,24 @@
           <button id="history-clear-button" class="history-clear-button" type="button">Xóa hết</button>
         </div>
         <div id="history-list" class="history-list"></div>
+      </div>
+
+      <!-- Notifications Popover -->
+      <div id="notifications-popover" class="history-popover notifications-popover hidden">
+        <div id="notifications-list-view">
+          <div class="history-popover-header">
+            <span class="history-popover-title">Thông báo</span>
+            <button id="notifications-mark-read-button" class="history-clear-button" type="button">Đánh dấu đã đọc</button>
+          </div>
+          <div id="notifications-list" class="history-list"></div>
+        </div>
+        <div id="notifications-detail-view" class="hidden">
+          <div class="history-popover-header">
+            <button id="notifications-back-button" class="history-clear-button" type="button">←</button>
+            <span id="notifications-detail-title" class="history-popover-title"></span>
+          </div>
+          <div id="notifications-detail-content" class="notification-detail-content"></div>
+        </div>
       </div>
     </div>
 
