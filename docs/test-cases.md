@@ -6,7 +6,7 @@ Tài liệu này là **nguồn chân lý** cho toàn bộ test case của extens
 
 - **ID là vĩnh viễn**: không đánh số lại, không tái sử dụng ID cũ. Test case bỏ đi thì đổi `Loại` thành `Retired`, giữ nguyên dòng.
 - Tên test trong file spec **bắt đầu bằng testId** (vd: `test('TC-POP-001 ...')`). 1 testId = đúng 1 test.
-- Map prefix ↔ file spec: `POP` → `popup.spec.js`, `SET` → `settings.spec.js`, `ERR` → `errors.spec.js`, `HIS` → `history.spec.js`, `CS` → `content-script.spec.js`. `MAN` chỉ dành cho test thủ công, không có code.
+- Map prefix ↔ file spec: `POP` → `popup.spec.js`, `SET` → `settings.spec.js`, `ERR` → `errors.spec.js`, `HIS` → `history.spec.js`, `NOT` → `notifications.spec.js`, `CS` → `content-script.spec.js`. `MAN` chỉ dành cho test thủ công, không có code.
 - Assert thông báo lỗi bằng **substring chính** (vd `"API Key không hợp lệ"`) — sửa dấu câu/emoji không làm vỡ test. Đổi nội dung chính của thông báo thì phải cập nhật catalog + spec (cần người dùng xác nhận).
 - `Ưu tiên`: **P1** = smoke (tag `@smoke` trong spec, chạy nhanh bằng `npm run test:smoke`), **P2** = đầy đủ.
 - `Loại`: `Auto` (đã có code Playwright) / `Manual` (chỉ test tay) / `Deferred` (sẽ tự động hoá sau) / `Retired` (đã bỏ).
@@ -71,6 +71,16 @@ Tài liệu này là **nguồn chân lý** cho toàn bộ test case của extens
 | TC-HIS-005 | Giới hạn 5 bản ghi | Seed 5 bản ghi | Dịch thêm 1 nội dung mới | Còn đúng 5 bản ghi, bản cũ nhất bị loại | P2 | Auto |
 | TC-HIS-006 | Dedup khi gõ tiếp | Dịch "Hel" xong | Gõ tiếp thành "Hello", dịch xong | Chỉ 1 bản ghi (bản mới thay bản cũ vì cùng prefix) | P2 | Auto |
 | TC-HIS-007 | Dịch lại nội dung cũ | Seed 2 bản ghi A, B (B mới nhất) | Dịch lại đúng nội dung A | A lên đầu danh sách, không có bản ghi trùng | P2 | Auto |
+
+## Thông báo (`tests/e2e/notifications.spec.js` — dữ liệu tại `notifications.js`, test assert động theo file nên release thêm thông báo không làm vỡ test)
+
+| ID | Tên test | Điều kiện đầu | Các bước | Kết quả mong đợi | Ưu tiên | Loại |
+|---|---|---|---|---|---|---|
+| TC-NOT-001 | Badge số chưa đọc + danh sách thông báo | Storage trống (tất cả chưa đọc) | Mở popup, click `#notifications-button` | Badge hiện đúng số thông báo trong `notifications.js`; popover liệt kê đủ title theo thứ tự file | P1 | Auto |
+| TC-NOT-002 | Xem chi tiết → tự đánh dấu đã đọc + quay lại | Storage trống | Mở popover, click thông báo đầu, click `←` | Detail hiện đúng title + content (giữ xuống dòng); `readNotificationIds` chứa id đó; badge giảm 1; `←` quay về danh sách | P1 | Auto |
+| TC-NOT-003 | Đánh dấu tất cả đã đọc | Storage trống | Mở popover, click "Đánh dấu đã đọc" | Badge ẩn; `readNotificationIds` = toàn bộ id | P2 | Auto |
+| TC-NOT-004 | Trạng thái đã đọc bền vững | Seed `readNotificationIds` = toàn bộ id | Mở popup | Badge ẩn ngay từ đầu | P2 | Auto |
+| TC-NOT-005 | Hai popover loại trừ nhau | Seed 1 bản ghi lịch sử | Mở popover lịch sử, click chuông; rồi ngược lại | Mở cái này thì cái kia đóng | P2 | Auto |
 
 ## Content script — dịch trên trang (`tests/e2e/content-script.spec.js` — trang web mock tại `https://e2e.test/`)
 

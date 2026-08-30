@@ -333,8 +333,9 @@ textarea:focus-visible {
   position: absolute;
   top: calc(100% + 8px);
   /* Align right edge with the history button:
-     pill padding 4 + settings button 36 + gap 2 + divider 1 + gap 2 = 45 */
-  right: 45px;
+     pill padding 4 + settings 36 + gap 2 + divider 1 + gap 2
+     + bell 36 + gap 2 + divider 1 + gap 2 = 86 */
+  right: 86px;
   width: 360px;
   z-index: 20;
   background: white;
@@ -381,6 +382,10 @@ textarea:focus-visible {
   font-weight: 700;
 }
 
+#notifications-back-button:hover {
+  text-decoration: none;
+}
+
 .history-list {
   display: flex;
   flex-direction: column;
@@ -402,6 +407,14 @@ textarea:focus-visible {
 
 .history-item:hover {
   background: #edf2f7;
+}
+
+.history-item.is-read .history-item-source {
+  color: #a0aec0;
+}
+
+.history-item.is-read .history-item-translated {
+  color: #cbd5e0;
 }
 
 .history-item-top {
@@ -441,6 +454,49 @@ textarea:focus-visible {
   text-align: center;
   font-size: 13px;
   color: #a0aec0;
+}
+
+/* Notifications */
+.notifications-popover {
+  /* Align right edge with the bell button:
+     pill padding 4 + settings 36 + gap 2 + divider 1 + gap 2 = 45 */
+  right: 45px;
+}
+
+#notifications-button {
+  position: relative;
+}
+
+.notifications-badge {
+  position: absolute;
+  top: 1px;
+  right: 1px;
+  min-width: 15px;
+  height: 15px;
+  padding: 0 3px;
+  border-radius: 999px;
+  background: #e53e3e;
+  color: #fff;
+  font-size: 9px;
+  font-weight: 700;
+  line-height: 15px;
+  text-align: center;
+}
+
+.notifications-badge.hidden,
+#notifications-list-view.hidden,
+#notifications-detail-view.hidden {
+  display: none;
+}
+
+.notification-detail-content {
+  padding: 4px 12px 8px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: #2d3748;
+  white-space: pre-line;
+  max-height: 320px;
+  overflow-y: auto;
 }
 
 /* Select Popover */
