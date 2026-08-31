@@ -40,10 +40,15 @@
                         <span class="provider-card-name">Groq</span>
                         <span class="provider-card-subtitle">Nhanh · Miễn phí</span>
                     </label>
+                    <label class="provider-card" id="provider-card-mistral">
+                        <input type="radio" name="provider" value="mistral">
+                        <span class="provider-card-name">Mistral</span>
+                        <span class="provider-card-subtitle">Chất lượng dịch tốt · Miễn phí</span>
+                    </label>
                     <label class="provider-card" id="provider-card-openrouter">
                         <input type="radio" name="provider" value="openrouter">
                         <span class="provider-card-name">OpenRouter</span>
-                        <span class="provider-card-subtitle">Nhiều Model</span>
+                        <span class="provider-card-subtitle">Nhiều Model trả phí chất lượng</span>
                     </label>
                 </div>
 
@@ -80,6 +85,39 @@
                         <option value="openai/gpt-oss-120b"></option>
                         <option value="openai/gpt-oss-20b"></option>
                         <option value="llama-3.3-70b-versatile"></option>
+                    </datalist>
+                </div>
+
+                <div id="mistral-settings" hidden>
+                    <div class="setting-label-row">
+                        <label class="setting-label">🔑 API Keys (Mistral)</label>
+                        <span class="api-key-badge" id="mistral-key-count">1/5</span>
+                    </div>
+                    <p class="setting-description">
+                        Nhập tối đa 5 keys. Extension sẽ tự động xoay vòng để tránh bị giới hạn quota.<br/>
+                        Lưu ý các API Key trong cùng một account sẽ chia sẻ quota. Bạn cần tạo nhiều account.
+                    </p>
+                    <div class="api-key-list" id="mistral-key-list"></div>
+                    <button type="button" class="add-key-button" id="add-mistral-key">➕ Thêm API Key</button>
+                    <div class="api-key-creation-url" style="margin-top: 8px;">
+                        <a href="https://console.mistral.ai/api-keys/" target="_blank" style="color: #667eea; text-decoration: none;">
+                            🔗 Tạo API Key tại Mistral Console (Miễn phí)
+                        </a>
+                    </div>
+
+                    <hr class="setting-divider">
+
+                    <label class="setting-label" for="mistral-model">🧠 Model</label>
+                    <input
+                        type="text"
+                        id="mistral-model"
+                        class="modern-input"
+                        list="mistral-models"
+                        placeholder="mistral-medium-3-5"
+                    >
+                    <datalist id="mistral-models">
+                        <option value="mistral-medium-3-5"></option>
+                        <option value="mistral-small-2603"></option>
                     </datalist>
                 </div>
 

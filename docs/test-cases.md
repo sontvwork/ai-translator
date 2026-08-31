@@ -28,12 +28,13 @@ Tài liệu này là **nguồn chân lý** cho toàn bộ test case của extens
 | TC-POP-011 | Nhận văn bản từ in-page translation | Seed `{selectedText, fromInPageTranslation: true}` vào storage.local | Mở popup | Input tự điền selectedText, tự dịch ngay; 2 flags bị xoá khỏi storage | P1 | Auto |
 | TC-POP-012 | Dịch qua OpenRouter | Seed provider openrouter + model tuỳ chọn + key | Gõ text, chờ dịch | Request tới endpoint openrouter.ai; `body.model` đúng model đã seed; header Bearer đúng key | P2 | Auto |
 | TC-POP-013 | Streaming hiển thị dần | Mock SSE có delay giữa các chunk (cần local SSE server vì `route.fulfill` buffer toàn bộ body) | Gõ text, quan sát output trong lúc stream | Output hiển thị từng phần trước khi hoàn tất | P2 | Deferred |
+| TC-POP-014 | Dịch qua Mistral | Seed provider mistral + model tuỳ chọn + key | Gõ text, chờ dịch | Request tới endpoint api.mistral.ai; `body.model` đúng model đã seed; header Bearer đúng key | P2 | Auto |
 
 ## Settings (`tests/e2e/settings.spec.js`)
 
 | ID | Tên test | Điều kiện đầu | Các bước | Kết quả mong đợi | Ưu tiên | Loại |
 |---|---|---|---|---|---|---|
-| TC-SET-001 | Trạng thái mặc định fresh install | Storage trống | Mở settings | Radio groq checked + card groq active; `#groq-settings` hiện, `#openrouter-settings` ẩn; 1 key row rỗng; badge "1/5"; delay 500; in-page translation bật | P1 | Auto |
+| TC-SET-001 | Trạng thái mặc định fresh install | Storage trống | Mở settings | Radio groq checked + card groq active; `#groq-settings` hiện, `#mistral-settings` và `#openrouter-settings` ẩn; 1 key row rỗng; badge "1/5"; delay 500; in-page translation bật | P1 | Auto |
 | TC-SET-002 | Chuyển provider | Settings đang mở (groq) | Click card OpenRouter | `#groq-settings` ẩn, `#openrouter-settings` hiện; card active đổi sang openrouter | P1 | Auto |
 | TC-SET-003 | Giới hạn 5 key | Settings đang mở | Bấm "Thêm API Key" tới khi đủ 5 row | Nút add ẩn khi đủ 5; badge "5/5" | P2 | Auto |
 | TC-SET-004 | Xoá key row | Có 3 key rows | Xoá row giữa; sau đó xoá hết | Đánh số lại liên tục #1, #2; xoá hết thì còn lại 1 row rỗng | P2 | Auto |
@@ -43,6 +44,7 @@ Tài liệu này là **nguồn chân lý** cho toàn bộ test case của extens
 | TC-SET-008 | Phím tắt Ctrl+S | Đã nhập key | Nhấn Ctrl+S | Lưu như click nút Save (success message + storage đúng) | P2 | Auto |
 | TC-SET-009 | Chuẩn hoá dữ liệu khi lưu | Key có space thừa, 1 row rỗng, model để trống | Lưu | Key được trim; row rỗng bị loại; model trống → dùng model mặc định khi load lại | P2 | Auto |
 | TC-SET-010 | Migration cấu hình cũ | Seed `{provider: 'gemini', openRouterApiKey: 'k'}` (format pre-3.2) | Mở settings | Provider chuyển thành groq; `openRouterApiKeys` = ['k']; các key legacy bị xoá khỏi storage.sync | P2 | Auto |
+| TC-SET-011 | Chuyển provider sang Mistral | Settings đang mở (groq) | Click card Mistral | `#mistral-settings` hiện, `#groq-settings` và `#openrouter-settings` ẩn; card active đổi sang mistral | P2 | Auto |
 
 ## Lỗi & providers (`tests/e2e/errors.spec.js` — chạy qua popup với mock API)
 
@@ -76,7 +78,7 @@ Tài liệu này là **nguồn chân lý** cho toàn bộ test case của extens
 
 | ID | Tên test | Điều kiện đầu | Các bước | Kết quả mong đợi | Ưu tiên | Loại |
 |---|---|---|---|---|---|---|
-| TC-NOT-001 | Badge số chưa đọc + danh sách thông báo | Storage trống (tất cả chưa đọc) | Mở popup, click `#notifications-button` | Badge hiện đúng số thông báo trong `notifications.js`; popover liệt kê đủ title theo thứ tự file | P1 | Auto |
+| TC-NOT-001 | Badge số chưa đọc + danh sách thông báo | Storage trống (tất cả chưa đọc) | Mở popup, click `#notifications-button` | Badge hiện đúng số thông báo trong `notifications.js`; popover liệt kê đủ thông báo (title + preview nội dung), mới nhất (id lớn nhất) trước | P1 | Auto |
 | TC-NOT-002 | Xem chi tiết → tự đánh dấu đã đọc + quay lại | Storage trống | Mở popover, click thông báo đầu, click `←` | Detail hiện đúng title + content (giữ xuống dòng); `readNotificationIds` chứa id đó; badge giảm 1; `←` quay về danh sách | P1 | Auto |
 | TC-NOT-003 | Đánh dấu tất cả đã đọc | Storage trống | Mở popover, click "Đánh dấu đã đọc" | Badge ẩn; `readNotificationIds` = toàn bộ id | P2 | Auto |
 | TC-NOT-004 | Trạng thái đã đọc bền vững | Seed `readNotificationIds` = toàn bộ id | Mở popup | Badge ẩn ngay từ đầu | P2 | Auto |
@@ -96,7 +98,7 @@ Tài liệu này là **nguồn chân lý** cho toàn bộ test case của extens
 
 | ID | Tên test | Điều kiện đầu | Các bước | Kết quả mong đợi | Ưu tiên | Loại |
 |---|---|---|---|---|---|---|
-| TC-MAN-001 | Dịch thật với API key thật | Có key Groq/OpenRouter thật | Dịch 1 đoạn văn bản thật | Kết quả dịch đúng nghĩa, stream mượt | P2 | Manual |
+| TC-MAN-001 | Dịch thật với API key thật | Có key Groq/Mistral/OpenRouter thật | Dịch 1 đoạn văn bản thật | Kết quả dịch đúng nghĩa, stream mượt | P2 | Manual |
 | TC-MAN-002 | openPopup mở popup thật | Load extension trong Chrome thật | Bôi đen text trên trang, click icon | Popup mở lên, tự điền + tự dịch (chrome.action.openPopup cần user gesture — không kiểm được trong automation) | P2 | Manual |
 | TC-MAN-003 | Thẩm mỹ giao diện | — | Quan sát rainbow-loading, layout popup/settings | Hiệu ứng và style hiển thị đúng thiết kế | P2 | Manual |
 

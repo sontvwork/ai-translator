@@ -1,10 +1,27 @@
 export const DEFAULT_GROQ_MODEL = "openai/gpt-oss-120b";
+export const DEFAULT_MISTRAL_MODEL = "mistral-medium-3-5";
 export const DEFAULT_OPENROUTER_MODEL = "google/gemini-2.5-flash-lite";
 export const MAX_API_KEYS = 5;
 
 const PROVIDERS = {
-  groq: { name: 'Groq', baseUrl: 'https://api.groq.com/openai/v1/chat/completions' },
-  openrouter: { name: 'OpenRouter', baseUrl: 'https://openrouter.ai/api/v1/chat/completions' }
+  groq: {
+    name: 'Groq',
+    baseUrl: 'https://api.groq.com/openai/v1/chat/completions',
+    keysField: 'groqApiKeys',
+    modelField: 'groqModel'
+  },
+  mistral: {
+    name: 'Mistral',
+    baseUrl: 'https://api.mistral.ai/v1/chat/completions',
+    keysField: 'mistralApiKeys',
+    modelField: 'mistralModel'
+  },
+  openrouter: {
+    name: 'OpenRouter',
+    baseUrl: 'https://openrouter.ai/api/v1/chat/completions',
+    keysField: 'openRouterApiKeys',
+    modelField: 'openRouterModel'
+  }
 };
 
 // Unified error codes so the popup shows the same messages for both providers:
@@ -24,6 +41,8 @@ export async function loadProviderSettings() {
     provider: 'groq',
     groqApiKeys: [],
     groqModel: DEFAULT_GROQ_MODEL,
+    mistralApiKeys: [],
+    mistralModel: DEFAULT_MISTRAL_MODEL,
     openRouterApiKeys: [],
     openRouterModel: DEFAULT_OPENROUTER_MODEL,
     // legacy keys (pre-3.2), migrated below
@@ -46,6 +65,8 @@ export async function loadProviderSettings() {
     provider: result.provider,
     groqApiKeys: result.groqApiKeys.map(key => key.trim()).filter(Boolean),
     groqModel: result.groqModel.trim() || DEFAULT_GROQ_MODEL,
+    mistralApiKeys: result.mistralApiKeys.map(key => key.trim()).filter(Boolean),
+    mistralModel: result.mistralModel.trim() || DEFAULT_MISTRAL_MODEL,
     openRouterApiKeys: result.openRouterApiKeys.map(key => key.trim()).filter(Boolean),
     openRouterModel: result.openRouterModel.trim() || DEFAULT_OPENROUTER_MODEL
   };
@@ -56,13 +77,14 @@ export function getProviderName(provider) {
 }
 
 export function getApiKeys(settings) {
-  return settings.provider === 'openrouter' ? settings.openRouterApiKeys : settings.groqApiKeys;
+  const entry = PROVIDERS[settings.provider] || PROVIDERS.groq;
+  return settings[entry.keysField];
 }
 
 export async function translate(prompt, settings, onDelta) {
   const provider = PROVIDERS[settings.provider] ? settings.provider : 'groq';
-  const { baseUrl } = PROVIDERS[provider];
-  const model = provider === 'openrouter' ? settings.openRouterModel : settings.groqModel;
+  const { baseUrl, modelField } = PROVIDERS[provider];
+  const model = settings[modelField];
   const keys = getApiKeys(settings);
 
   if (keys.length === 0) {

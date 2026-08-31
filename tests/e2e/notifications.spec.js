@@ -4,6 +4,8 @@ import { NOTIFICATIONS } from '../../notifications.js';
 
 // Asserts are dynamic against notifications.js so releases adding notifications don't break tests.
 const ALL_IDS = NOTIFICATIONS.map((n) => n.id);
+// The popover lists newest (highest id) first.
+const SORTED = [...NOTIFICATIONS].sort((a, b) => b.id - a.id);
 
 test('TC-NOT-001 badge shows unread count and popover lists all titles @smoke', async ({ bridge, openPopup }) => {
   await seedSettings(bridge);
@@ -14,14 +16,15 @@ test('TC-NOT-001 badge shows unread count and popover lists all titles @smoke', 
   await popup.click('#notifications-button');
   const items = popup.locator('#notifications-list .history-item');
   await expect(items).toHaveCount(NOTIFICATIONS.length);
-  for (let i = 0; i < NOTIFICATIONS.length; i++) {
-    await expect(items.nth(i)).toHaveText(NOTIFICATIONS[i].title);
+  for (let i = 0; i < SORTED.length; i++) {
+    await expect(items.nth(i).locator('.history-item-source')).toHaveText(SORTED[i].title);
+    await expect(items.nth(i).locator('.history-item-translated')).toHaveText(SORTED[i].content);
   }
 });
 
 test('TC-NOT-002 opening a detail marks it read and back returns to the list @smoke', async ({ bridge, openPopup }) => {
   await seedSettings(bridge);
-  const first = NOTIFICATIONS[0];
+  const first = SORTED[0];
 
   const popup = await openPopup();
   await popup.click('#notifications-button');

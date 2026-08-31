@@ -9,6 +9,7 @@ test('TC-SET-001 fresh install shows groq defaults @smoke', async ({ openSetting
   await expect(settings.locator('input[name="provider"][value="groq"]')).toBeChecked();
   await expect(settings.locator('#provider-card-groq')).toHaveClass(/active/);
   await expect(settings.locator('#groq-settings')).toBeVisible();
+  await expect(settings.locator('#mistral-settings')).toBeHidden();
   await expect(settings.locator('#openrouter-settings')).toBeHidden();
   await expect(settings.locator('#groq-key-list .api-key-row')).toHaveCount(1);
   await expect(settings.locator('#groq-key-list input')).toHaveValue('');
@@ -28,6 +29,20 @@ test('TC-SET-002 switching provider toggles the settings blocks and active card 
   await expect(settings.locator('#groq-settings')).toBeHidden();
   await expect(settings.locator('#openrouter-settings')).toBeVisible();
   await expect(settings.locator('#provider-card-openrouter')).toHaveClass(/active/);
+  await expect(settings.locator('#provider-card-groq')).not.toHaveClass(/active/);
+});
+
+test('TC-SET-011 switching to mistral shows its settings block', async ({ openSettings }) => {
+  const settings = await openSettings();
+  await expect(settings.locator('#groq-settings')).toBeVisible();
+
+  await settings.locator('#provider-card-mistral').click();
+
+  await expect(settings.locator('input[name="provider"][value="mistral"]')).toBeChecked();
+  await expect(settings.locator('#groq-settings')).toBeHidden();
+  await expect(settings.locator('#openrouter-settings')).toBeHidden();
+  await expect(settings.locator('#mistral-settings')).toBeVisible();
+  await expect(settings.locator('#provider-card-mistral')).toHaveClass(/active/);
   await expect(settings.locator('#provider-card-groq')).not.toHaveClass(/active/);
 });
 
@@ -109,6 +124,7 @@ test('TC-SET-007 save shows success message and persists to chrome.storage.sync 
   expect(sync.provider).toBe('groq');
   expect(sync.groqApiKeys).toEqual(['gsk_saved_key']);
   expect(sync.groqModel).toBe('openai/gpt-oss-120b');
+  expect(sync.mistralApiKeys).toEqual([]);
   expect(sync.openRouterApiKeys).toEqual([]);
   expect(sync.translationDelay).toBe(500);
   expect(sync.inPageTranslationEnabled).toBe(true);
