@@ -222,7 +222,14 @@ document.addEventListener("DOMContentLoaded", function () {
 
   const QUOTA_URLS = {
     groq: 'https://console.groq.com/settings/limits',
+    mistral: 'https://console.mistral.ai/limits',
     openrouter: 'https://openrouter.ai/activity'
+  };
+
+  const CREDITS_URLS = {
+    groq: 'console.groq.com/settings/billing',
+    mistral: 'console.mistral.ai/billing',
+    openrouter: 'openrouter.ai/credits'
   };
 
   function toggleQuotaLink(show, provider) {
@@ -263,7 +270,7 @@ document.addEventListener("DOMContentLoaded", function () {
       }
 
       case 'NO_CREDITS':
-        setOutput("❌ Tài khoản OpenRouter đã hết credits!\n\nVui lòng nạp thêm tại openrouter.ai/credits");
+        setOutput(`❌ Tài khoản ${providerName} đã hết credits!\n\nVui lòng nạp thêm tại ${CREDITS_URLS[provider] || CREDITS_URLS.openrouter}`);
         return;
 
       case 'MODEL_INVALID':

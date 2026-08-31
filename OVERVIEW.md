@@ -42,15 +42,15 @@ AI Translator rút gọn quy trình này xuống **1 cú click**, ngay tại ch�
 
 ## Cách hoạt động phía "hậu trường"
 
-- Extension **không tự có trí tuệ dịch thuật** — nó gửi văn bản tới một **nhà cung cấp AI bên ngoài** (Groq hoặc OpenRouter) để lấy bản dịch, giống như việc gọi API tới ChatGPT.
-- Người dùng cần tự đăng ký tài khoản ở Groq hoặc OpenRouter, lấy "API Key" (giống như một mã truy cập cá nhân), rồi nhập vào trang Cài đặt của extension. Cả hai nơi đều có gói dùng miễn phí.
+- Extension **không tự có trí tuệ dịch thuật** — nó gửi văn bản tới một **nhà cung cấp AI bên ngoài** (Groq, Mistral hoặc OpenRouter) để lấy bản dịch, giống như việc gọi API tới ChatGPT.
+- Người dùng cần tự đăng ký tài khoản ở Groq, Mistral hoặc OpenRouter, lấy "API Key" (giống như một mã truy cập cá nhân), rồi nhập vào trang Cài đặt của extension. Cả ba nơi đều có gói dùng miễn phí.
 - Người dùng có thể nhập tối đa 5 API Key cho một nhà cung cấp. Extension tự động xoay vòng lần lượt từng key mỗi lượt dịch (round-robin). Nếu một key bị giới hạn, nó sẽ tạm thời bị bỏ qua, extension tự chuyển sang key khả dụng tiếp theo.
 - Người dùng cũng có thể chọn model AI cụ thể muốn dùng (mỗi nhà cung cấp có sẵn vài lựa chọn gợi ý).
 
 ## Trang Cài đặt (Settings)
 
 Người dùng có thể tuỳ chỉnh:
-- Chọn nhà cung cấp AI (Groq hoặc OpenRouter) — chỉ dùng một nhà cung cấp tại một thời điểm.
+- Chọn nhà cung cấp AI (Groq, Mistral hoặc OpenRouter) — chỉ dùng một nhà cung cấp tại một thời điểm.
 - Quản lý danh sách API Key (thêm/xoá, tối đa 5 key).
 - Chọn model AI.
 - Độ trễ trước khi tự động dịch trong popup (300ms–1000ms) — càng thấp thì dịch càng nhanh sau khi ngừng gõ, càng cao thì càng đỡ gọi dịch thừa khi đang gõ dở.

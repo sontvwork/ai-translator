@@ -33,7 +33,7 @@ Pages: `chrome-extension://<id>/popup.html` and `chrome-extension://<id>/setting
 ## Drive
 
 - Seed/read settings via `page.evaluate` with `chrome.storage.sync` / `chrome.storage.local` on an extension page.
-- Mock provider APIs with `context.route('https://api.groq.com/**')` / `('https://openrouter.ai/**')` and `route.fulfill` (SSE body: `data: {...}\n\n` lines + `data: [DONE]\n\n`). For progressive-streaming observation, run a local `http.createServer` that writes SSE chunks with delays and rewrite the fetch URL via `addInitScript` (route.fulfill is buffered).
+- Mock provider APIs with `context.route('https://api.groq.com/**')` / `('https://api.mistral.ai/**')` / `('https://openrouter.ai/**')` and `route.fulfill` (SSE body: `data: {...}\n\n` lines + `data: [DONE]\n\n`). For progressive-streaming observation, run a local `http.createServer` that writes SSE chunks with delays and rewrite the fetch URL via `addInitScript` (route.fulfill is buffered).
 - Typing in `#input-text` triggers translation after a debounce (default 500ms).
 
 ## Gotchas

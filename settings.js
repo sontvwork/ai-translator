@@ -1,9 +1,11 @@
-import { loadProviderSettings, DEFAULT_GROQ_MODEL, DEFAULT_OPENROUTER_MODEL, MAX_API_KEYS } from './providers.js';
+import { loadProviderSettings, DEFAULT_GROQ_MODEL, DEFAULT_MISTRAL_MODEL, DEFAULT_OPENROUTER_MODEL, MAX_API_KEYS } from './providers.js';
 
 document.addEventListener('DOMContentLoaded', function() {
     const groqModelInput = document.getElementById('groq-model');
+    const mistralModelInput = document.getElementById('mistral-model');
     const openRouterModelInput = document.getElementById('openrouter-model');
     const groqSettingsGroup = document.getElementById('groq-settings');
+    const mistralSettingsGroup = document.getElementById('mistral-settings');
     const openRouterSettingsGroup = document.getElementById('openrouter-settings');
     const providerRadios = document.querySelectorAll('input[name="provider"]');
     const providerCards = document.querySelectorAll('.provider-card');
@@ -18,6 +20,12 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('add-groq-key'),
         document.getElementById('groq-key-count'),
         'Nhập Groq API Key...'
+    );
+    const mistralKeyList = createKeyListManager(
+        document.getElementById('mistral-key-list'),
+        document.getElementById('add-mistral-key'),
+        document.getElementById('mistral-key-count'),
+        'Nhập Mistral API Key...'
     );
     const openRouterKeyList = createKeyListManager(
         document.getElementById('openrouter-key-list'),
@@ -35,6 +43,7 @@ document.addEventListener('DOMContentLoaded', function() {
     function updateProviderVisibility() {
         const provider = document.querySelector('input[name="provider"]:checked').value;
         groqSettingsGroup.hidden = provider !== 'groq';
+        mistralSettingsGroup.hidden = provider !== 'mistral';
         openRouterSettingsGroup.hidden = provider !== 'openrouter';
         providerCards.forEach(function(card) {
             card.classList.toggle('active', card.querySelector('input').value === provider);
@@ -141,6 +150,8 @@ document.addEventListener('DOMContentLoaded', function() {
         updateProviderVisibility();
         groqKeyList.setKeys(providerSettings.groqApiKeys);
         groqModelInput.value = providerSettings.groqModel;
+        mistralKeyList.setKeys(providerSettings.mistralApiKeys);
+        mistralModelInput.value = providerSettings.mistralModel;
         openRouterKeyList.setKeys(providerSettings.openRouterApiKeys);
         openRouterModelInput.value = providerSettings.openRouterModel;
 
@@ -159,6 +170,8 @@ document.addEventListener('DOMContentLoaded', function() {
             provider: document.querySelector('input[name="provider"]:checked').value,
             groqApiKeys: groqKeyList.getKeys(),
             groqModel: groqModelInput.value.trim() || DEFAULT_GROQ_MODEL,
+            mistralApiKeys: mistralKeyList.getKeys(),
+            mistralModel: mistralModelInput.value.trim() || DEFAULT_MISTRAL_MODEL,
             openRouterApiKeys: openRouterKeyList.getKeys(),
             openRouterModel: openRouterModelInput.value.trim() || DEFAULT_OPENROUTER_MODEL,
             translationDelay: Number.parseInt(translationDelayInput.value, 10),

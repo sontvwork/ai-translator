@@ -19,6 +19,7 @@
     ],
     "host_permissions": [
         "https://api.groq.com/*",
+        "https://api.mistral.ai/*",
         "https://openrouter.ai/*"
     ],
     "content_scripts": [

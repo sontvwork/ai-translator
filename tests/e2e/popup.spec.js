@@ -155,6 +155,24 @@ test('TC-POP-012 openrouter provider hits its endpoint with the seeded model and
   expect(requests[0].authorization).toBe('Bearer sk_or_test_key');
 });
 
+test('TC-POP-014 mistral provider hits its endpoint with the seeded model and key', async ({ bridge, extContext, openPopup }) => {
+  await seedSettings(bridge, {
+    provider: 'mistral',
+    mistralApiKeys: ['sk_mistral_test_key'],
+    mistralModel: 'mistral-medium-3-5'
+  });
+  const requests = await mockProvider(extContext, [{ text: 'Qua Mistral' }]);
+
+  const popup = await openPopup();
+  await popup.fill('#input-text', 'Hello');
+
+  await expect(popup.locator('#output-text')).toHaveValue('Qua Mistral');
+  expect(requests).toHaveLength(1);
+  expect(requests[0].url).toBe('https://api.mistral.ai/v1/chat/completions');
+  expect(requests[0].body.model).toBe('mistral-medium-3-5');
+  expect(requests[0].authorization).toBe('Bearer sk_mistral_test_key');
+});
+
 test('TC-POP-011 in-page selection auto-fills, auto-translates and clears the flags @smoke', async ({ bridge, extContext, openPopup }) => {
   await seedSettings(bridge);
   const requests = await mockProvider(extContext, [{ text: 'Văn bản đã dịch' }]);

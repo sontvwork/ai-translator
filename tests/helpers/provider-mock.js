@@ -1,4 +1,4 @@
-// Mocks the Groq/OpenRouter chat-completions endpoints at the network layer.
+// Mocks the Groq/Mistral/OpenRouter chat-completions endpoints at the network layer.
 //
 // `plan` is an ordered array of responses; the last entry repeats for any
 // extra requests:
@@ -8,6 +8,7 @@
 // Returns the captured `requests` array (url, authorization, body) so tests
 // can assert request count, key rotation, model and prompt content.
 export const GROQ_ENDPOINT = 'https://api.groq.com/openai/v1/chat/completions';
+export const MISTRAL_ENDPOINT = 'https://api.mistral.ai/v1/chat/completions';
 export const OPENROUTER_ENDPOINT = 'https://openrouter.ai/api/v1/chat/completions';
 
 function sseBody(text) {
@@ -48,6 +49,7 @@ export async function mockProvider(context, plan) {
   };
 
   await context.route('https://api.groq.com/**', handler);
+  await context.route('https://api.mistral.ai/**', handler);
   await context.route('https://openrouter.ai/**', handler);
   return requests;
 }

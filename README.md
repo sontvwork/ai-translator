@@ -1,4 +1,4 @@
-# AI Translator using Groq or OpenRouter
+# AI Translator using Groq, Mistral or OpenRouter
 
 ## Chrome Web Store
 
