@@ -25,31 +25,56 @@
         
         <div class="settings-content">
             <div class="setting-group">
-                <div class="setting-group-header">
+                <div class="setting-group-header setting-group-header--banner">
                     <div class="setting-icon">🤖</div>
-                    <div>
+                    <div class="setting-group-header-text">
                         <label class="setting-label">Nhà cung cấp AI</label>
-                        <p class="setting-description">
-                            Chọn nhà cung cấp dùng để dịch — chỉ một nhà cung cấp hoạt động tại một thời điểm.
-                        </p>
+                        <p class="setting-description">Tự đăng ký với nhà cung cấp để không bị giới hạn lượt dịch. Hoàn toàn miễn phí</p>
                     </div>
                 </div>
-                <div class="provider-cards">
-                    <label class="provider-card" id="provider-card-groq">
-                        <input type="radio" name="provider" value="groq" checked>
-                        <span class="provider-card-name">Groq</span>
-                        <span class="provider-card-subtitle">Nhanh · Miễn phí</span>
-                    </label>
-                    <label class="provider-card" id="provider-card-mistral">
-                        <input type="radio" name="provider" value="mistral">
-                        <span class="provider-card-name">Mistral</span>
-                        <span class="provider-card-subtitle">Chất lượng dịch tốt · Miễn phí</span>
-                    </label>
-                    <label class="provider-card" id="provider-card-openrouter">
-                        <input type="radio" name="provider" value="openrouter">
-                        <span class="provider-card-name">OpenRouter</span>
-                        <span class="provider-card-subtitle">Nhiều Model trả phí chất lượng</span>
-                    </label>
+                <div class="provider-select">
+                    <button type="button" class="provider-trigger" id="provider-trigger" aria-haspopup="listbox" aria-expanded="false">
+                        <img class="provider-mono" id="provider-trigger-mono" src="assets/groq.png" alt="">
+                        <span class="provider-trigger-text">
+                            <span class="provider-card-name" id="provider-trigger-name">Groq</span>
+                            <span class="provider-card-subtitle" id="provider-trigger-sub">Miễn phí · Chất lượng dịch tương đối tốt · Tốc độ sấm sét</span>
+                        </span>
+                        <svg class="provider-caret" width="18" height="18" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                            <path d="m6 8 4 4 4-4" stroke="#6b7280" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"></path>
+                        </svg>
+                    </button>
+                    <div class="provider-menu" id="provider-menu" role="listbox" hidden>
+                        <label class="provider-card" id="provider-card-groq" role="option">
+                            <input type="radio" name="provider" value="groq" checked>
+                            <img class="provider-mono" src="assets/groq.png" alt="">
+                            <span class="provider-card-text">
+                                <span class="provider-card-name">Groq</span>
+                                <span class="provider-card-subtitle">Miễn phí · Chất lượng dịch tương đối tốt · Tốc độ sấm sét</span>
+                            </span>
+                            <span class="provider-current-badge">Đang dùng</span>
+                            <span class="provider-check">✓</span>
+                        </label>
+                        <label class="provider-card" id="provider-card-mistral" role="option">
+                            <input type="radio" name="provider" value="mistral">
+                            <img class="provider-mono" src="assets/mistral.png" alt="">
+                            <span class="provider-card-text">
+                                <span class="provider-card-name">Mistral</span>
+                                <span class="provider-card-subtitle">Miễn phí · Chất lượng dịch tốt · Tốc độ tương đối nhanh</span>
+                            </span>
+                            <span class="provider-current-badge">Đang dùng</span>
+                            <span class="provider-check">✓</span>
+                        </label>
+                        <label class="provider-card" id="provider-card-openrouter" role="option">
+                            <input type="radio" name="provider" value="openrouter">
+                            <img class="provider-mono" src="assets/openrouter.png" alt="">
+                            <span class="provider-card-text">
+                                <span class="provider-card-name">OpenRouter</span>
+                                <span class="provider-card-subtitle">Nhiều Model trả phí chất lượng.</span>
+                            </span>
+                            <span class="provider-current-badge">Đang dùng</span>
+                            <span class="provider-check">✓</span>
+                        </label>
+                    </div>
                 </div>
 
                 <hr class="setting-divider">
@@ -74,18 +99,25 @@
                     <hr class="setting-divider">
 
                     <label class="setting-label" for="groq-model">🧠 Model</label>
+                    <div class="provider-select model-select" data-input="groq-model">
+                        <button type="button" class="provider-trigger" aria-haspopup="listbox" aria-expanded="false">
+                            <span class="provider-trigger-text">
+                                <span class="provider-card-name"></span>
+                                <span class="provider-card-subtitle"></span>
+                            </span>
+                            <svg class="provider-caret" width="18" height="18" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                                <path d="m6 8 4 4 4-4" stroke="#6b7280" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"></path>
+                            </svg>
+                        </button>
+                        <div class="provider-menu" role="listbox" hidden></div>
+                    </div>
                     <input
                         type="text"
                         id="groq-model"
-                        class="modern-input"
-                        list="groq-models"
-                        placeholder="openai/gpt-oss-120b"
+                        class="modern-input model-custom-input"
+                        placeholder="Nhập Model ID..."
+                        hidden
                     >
-                    <datalist id="groq-models">
-                        <option value="openai/gpt-oss-120b"></option>
-                        <option value="openai/gpt-oss-20b"></option>
-                        <option value="llama-3.3-70b-versatile"></option>
-                    </datalist>
                 </div>
 
                 <div id="mistral-settings" hidden>
@@ -108,17 +140,25 @@
                     <hr class="setting-divider">
 
                     <label class="setting-label" for="mistral-model">🧠 Model</label>
+                    <div class="provider-select model-select" data-input="mistral-model">
+                        <button type="button" class="provider-trigger" aria-haspopup="listbox" aria-expanded="false">
+                            <span class="provider-trigger-text">
+                                <span class="provider-card-name"></span>
+                                <span class="provider-card-subtitle"></span>
+                            </span>
+                            <svg class="provider-caret" width="18" height="18" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                                <path d="m6 8 4 4 4-4" stroke="#6b7280" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"></path>
+                            </svg>
+                        </button>
+                        <div class="provider-menu" role="listbox" hidden></div>
+                    </div>
                     <input
                         type="text"
                         id="mistral-model"
-                        class="modern-input"
-                        list="mistral-models"
-                        placeholder="mistral-medium-3-5"
+                        class="modern-input model-custom-input"
+                        placeholder="Nhập Model ID..."
+                        hidden
                     >
-                    <datalist id="mistral-models">
-                        <option value="mistral-medium-3-5"></option>
-                        <option value="mistral-small-2603"></option>
-                    </datalist>
                 </div>
 
                 <div id="openrouter-settings" hidden>
@@ -141,17 +181,25 @@
                     <hr class="setting-divider">
 
                     <label class="setting-label" for="openrouter-model">🧠 Model</label>
+                    <div class="provider-select model-select" data-input="openrouter-model">
+                        <button type="button" class="provider-trigger" aria-haspopup="listbox" aria-expanded="false">
+                            <span class="provider-trigger-text">
+                                <span class="provider-card-name"></span>
+                                <span class="provider-card-subtitle"></span>
+                            </span>
+                            <svg class="provider-caret" width="18" height="18" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                                <path d="m6 8 4 4 4-4" stroke="#6b7280" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"></path>
+                            </svg>
+                        </button>
+                        <div class="provider-menu" role="listbox" hidden></div>
+                    </div>
                     <input
                         type="text"
                         id="openrouter-model"
-                        class="modern-input"
-                        list="openrouter-models"
-                        placeholder="google/gemini-2.5-flash-lite"
+                        class="modern-input model-custom-input"
+                        placeholder="Nhập Model ID..."
+                        hidden
                     >
-                    <datalist id="openrouter-models">
-                        <option value="google/gemini-2.5-flash-lite"></option>
-                        <option value="inclusionai/ling-2.6-flash"></option>
-                    </datalist>
                 </div>
             </div>
 

@@ -42,9 +42,12 @@ Tài liệu này là **nguồn chân lý** cho toàn bộ test case của extens
 | TC-SET-006 | Slider độ trễ | Settings đang mở | Kéo slider tới 700 | `#delay-value` hiển thị "700" | P2 | Auto |
 | TC-SET-007 | Lưu cài đặt | Đã nhập key groq | Click "Lưu cài đặt" | `#success-message` hiện class `show`; `chrome.storage.sync` chứa đúng toàn bộ giá trị | P1 | Auto |
 | TC-SET-008 | Phím tắt Ctrl+S | Đã nhập key | Nhấn Ctrl+S | Lưu như click nút Save (success message + storage đúng) | P2 | Auto |
-| TC-SET-009 | Chuẩn hoá dữ liệu khi lưu | Key có space thừa, 1 row rỗng, model để trống | Lưu | Key được trim; row rỗng bị loại; model trống → dùng model mặc định khi load lại | P2 | Auto |
+| TC-SET-009 | Chuẩn hoá dữ liệu khi lưu | Key có space thừa, 1 row rỗng, chọn "Tự nhập model" và để trống | Lưu | Key được trim; row rỗng bị loại; model trống → dùng model mặc định khi load lại | P2 | Auto |
 | TC-SET-010 | Migration cấu hình cũ | Seed `{provider: 'gemini', openRouterApiKey: 'k'}` (format pre-3.2) | Mở settings | Provider chuyển thành groq; `openRouterApiKeys` = ['k']; các key legacy bị xoá khỏi storage.sync | P2 | Auto |
 | TC-SET-011 | Chuyển provider sang Mistral | Settings đang mở (groq) | Click card Mistral | `#mistral-settings` hiện, `#groq-settings` và `#openrouter-settings` ẩn; card active đổi sang mistral | P2 | Auto |
+| TC-SET-012 | Badge "Đang dùng" chỉ theo provider đã lưu | Settings đang mở (groq đã lưu) | Click card Mistral (chưa bấm Lưu) | Card Groq vẫn còn badge "Đang dùng", card Mistral chưa có; sau khi click "Lưu cài đặt" badge chuyển sang card Mistral | P2 | Auto |
+| TC-SET-013 | Chọn model từ dropdown | Settings đang mở (groq, model mặc định) | Mở model select, chọn model khác, Lưu | Trigger hiển thị tên + mô tả model đã chọn; input tự nhập vẫn ẩn; `groqModel` trong storage đúng model đã chọn | P2 | Auto |
+| TC-SET-014 | Tự nhập model | Settings đang mở (groq) | Mở model select, chọn "Tự nhập model", gõ model tuỳ ý, Lưu, mở lại settings | Input hiện khi chọn "Tự nhập model"; storage lưu đúng model; mở lại hiển thị chế độ tự nhập với đúng giá trị | P2 | Auto |
 
 ## Lỗi & providers (`tests/e2e/errors.spec.js` — chạy qua popup với mock API)
 

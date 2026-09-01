@@ -1,5 +1,21 @@
 import { loadProviderSettings, DEFAULT_GROQ_MODEL, DEFAULT_MISTRAL_MODEL, DEFAULT_OPENROUTER_MODEL, MAX_API_KEYS } from './providers.js';
 
+const MODEL_OPTIONS = {
+    'groq-model': [
+        { id: 'openai/gpt-oss-120b', desc: 'Chất lượng dịch tốt (8/10)  ⭐' },
+        { id: 'openai/gpt-oss-20b', desc: 'Chất lượng dịch khá (6/10) · Phù hợp dịch cơ bản, không phải tài liệu quan trọng' },
+    ],
+    'mistral-model': [
+        { id: 'mistral-medium-3-5', desc: 'Chất lượng dịch rất tốt (9.5/10)  ⭐' },
+        { id: 'mistral-small-2603', desc: 'Nhanh · Phù hợp dịch cơ bản' }
+    ],
+    'openrouter-model': [
+        { id: 'google/gemini-2.5-flash-lite', desc: 'Chất lượng dịch tốt (9/10)  ⭐' },
+        { id: 'inclusionai/ling-2.6-flash', desc: 'Siêu rẻ · Chất lượng cơ bản, dùng dự phòng' }
+    ]
+};
+const CUSTOM_MODEL = { id: '__custom__', name: '✏️ Tự nhập model', desc: 'Nhập ID model bất kỳ của nhà cung cấp' };
+
 document.addEventListener('DOMContentLoaded', function() {
     const groqModelInput = document.getElementById('groq-model');
     const mistralModelInput = document.getElementById('mistral-model');
@@ -9,6 +25,11 @@ document.addEventListener('DOMContentLoaded', function() {
     const openRouterSettingsGroup = document.getElementById('openrouter-settings');
     const providerRadios = document.querySelectorAll('input[name="provider"]');
     const providerCards = document.querySelectorAll('.provider-card');
+    const providerTrigger = document.getElementById('provider-trigger');
+    const providerMenu = document.getElementById('provider-menu');
+    const providerTriggerMono = document.getElementById('provider-trigger-mono');
+    const providerTriggerName = document.getElementById('provider-trigger-name');
+    const providerTriggerSub = document.getElementById('provider-trigger-sub');
     const translationDelayInput = document.getElementById('translation-delay');
     const delayValueSpan = document.getElementById('delay-value');
     const inPageTranslationInput = document.getElementById('in-page-translation');
@@ -34,11 +55,125 @@ document.addEventListener('DOMContentLoaded', function() {
         'Nhập OpenRouter API Key...'
     );
 
+    const modelSelects = {};
+    document.querySelectorAll('.model-select').forEach(function(root) {
+        modelSelects[root.dataset.input] = setupModelSelect(root);
+    });
+
     loadSettings();
 
     providerRadios.forEach(function(radio) {
-        radio.addEventListener('change', updateProviderVisibility);
+        radio.addEventListener('change', function() {
+            updateProviderVisibility();
+            setMenuOpen(false);
+        });
     });
+
+    providerTrigger.addEventListener('click', function() {
+        setMenuOpen(providerMenu.hidden);
+    });
+
+    document.addEventListener('click', function(e) {
+        closeMenusOutside(e.target);
+    });
+
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            closeMenusOutside(null);
+        }
+    });
+
+    function closeMenusOutside(target) {
+        document.querySelectorAll('.provider-select').forEach(function(select) {
+            if (target && select.contains(target)) return;
+            select.querySelector('.provider-menu').hidden = true;
+            select.querySelector('.provider-trigger').setAttribute('aria-expanded', 'false');
+        });
+    }
+
+    function setMenuOpen(open) {
+        providerMenu.hidden = !open;
+        providerTrigger.setAttribute('aria-expanded', String(open));
+    }
+
+    function setupModelSelect(root) {
+        const input = document.getElementById(root.dataset.input);
+        const trigger = root.querySelector('.provider-trigger');
+        const triggerName = root.querySelector('.provider-card-name');
+        const triggerSub = root.querySelector('.provider-card-subtitle');
+        const menu = root.querySelector('.provider-menu');
+        const options = MODEL_OPTIONS[root.dataset.input].concat(CUSTOM_MODEL);
+
+        const cards = options.map(function(option) {
+            const card = document.createElement('div');
+            card.className = 'provider-card';
+            card.setAttribute('role', 'option');
+
+            const text = document.createElement('span');
+            text.className = 'provider-card-text';
+            const name = document.createElement('span');
+            name.className = 'provider-card-name';
+            name.textContent = option.name || option.id;
+            const subtitle = document.createElement('span');
+            subtitle.className = 'provider-card-subtitle';
+            subtitle.textContent = option.desc;
+            text.appendChild(name);
+            text.appendChild(subtitle);
+
+            const check = document.createElement('span');
+            check.className = 'provider-check';
+            check.textContent = '✓';
+
+            card.appendChild(text);
+            card.appendChild(check);
+            card.addEventListener('click', function() {
+                select(option, true);
+                menu.hidden = true;
+                trigger.setAttribute('aria-expanded', 'false');
+            });
+            menu.appendChild(card);
+            return card;
+        });
+
+        trigger.addEventListener('click', function() {
+            const willOpen = menu.hidden;
+            closeMenusOutside(null);
+            menu.hidden = !willOpen;
+            trigger.setAttribute('aria-expanded', String(willOpen));
+        });
+
+        function select(option, fromClick) {
+            const isCustom = option.id === CUSTOM_MODEL.id;
+            options.forEach(function(o, i) {
+                cards[i].classList.toggle('active', o.id === option.id);
+            });
+            triggerName.textContent = option.name || option.id;
+            triggerSub.textContent = option.desc;
+            input.hidden = !isCustom;
+            if (fromClick) {
+                if (isCustom) {
+                    input.value = '';
+                    input.focus();
+                } else {
+                    input.value = option.id;
+                }
+            }
+        }
+
+        return {
+            setValue: function(model) {
+                const preset = options.find(function(o) { return o.id === model; });
+                input.value = model;
+                select(preset || CUSTOM_MODEL, false);
+            }
+        };
+    }
+
+    function updateSavedProviderBadge(savedProvider) {
+        providerCards.forEach(function(card) {
+            card.classList.toggle('is-saved', card.querySelector('input').value === savedProvider);
+        });
+    }
 
     function updateProviderVisibility() {
         const provider = document.querySelector('input[name="provider"]:checked').value;
@@ -46,7 +181,13 @@ document.addEventListener('DOMContentLoaded', function() {
         mistralSettingsGroup.hidden = provider !== 'mistral';
         openRouterSettingsGroup.hidden = provider !== 'openrouter';
         providerCards.forEach(function(card) {
-            card.classList.toggle('active', card.querySelector('input').value === provider);
+            const isActive = card.querySelector('input').value === provider;
+            card.classList.toggle('active', isActive);
+            if (isActive) {
+                providerTriggerMono.src = card.querySelector('.provider-mono').src;
+                providerTriggerName.textContent = card.querySelector('.provider-card-name').textContent;
+                providerTriggerSub.textContent = card.querySelector('.provider-card-subtitle').textContent;
+            }
         });
     }
 
@@ -148,12 +289,13 @@ document.addEventListener('DOMContentLoaded', function() {
 
         document.querySelector(`input[name="provider"][value="${providerSettings.provider}"]`).checked = true;
         updateProviderVisibility();
+        updateSavedProviderBadge(providerSettings.provider);
         groqKeyList.setKeys(providerSettings.groqApiKeys);
-        groqModelInput.value = providerSettings.groqModel;
+        modelSelects['groq-model'].setValue(providerSettings.groqModel);
         mistralKeyList.setKeys(providerSettings.mistralApiKeys);
-        mistralModelInput.value = providerSettings.mistralModel;
+        modelSelects['mistral-model'].setValue(providerSettings.mistralModel);
         openRouterKeyList.setKeys(providerSettings.openRouterApiKeys);
-        openRouterModelInput.value = providerSettings.openRouterModel;
+        modelSelects['openrouter-model'].setValue(providerSettings.openRouterModel);
 
         chrome.storage.sync.get({
             translationDelay: 500,
@@ -179,6 +321,7 @@ document.addEventListener('DOMContentLoaded', function() {
         };
 
         chrome.storage.sync.set(settings, function() {
+            updateSavedProviderBadge(settings.provider);
             showSuccessMessage();
         });
     }
