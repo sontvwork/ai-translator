@@ -7,7 +7,11 @@ test('TC-SET-001 fresh install shows groq defaults @smoke', async ({ openSetting
   const settings = await openSettings();
 
   await expect(settings.locator('input[name="provider"][value="groq"]')).toBeChecked();
+  await expect(settings.locator('#provider-menu')).toBeHidden();
+  await expect(settings.locator('#provider-trigger-name')).toHaveText('Groq');
+  await settings.locator('#provider-trigger').click();
   await expect(settings.locator('#provider-card-groq')).toHaveClass(/active/);
+  await settings.locator('#provider-trigger').click();
   await expect(settings.locator('#groq-settings')).toBeVisible();
   await expect(settings.locator('#mistral-settings')).toBeHidden();
   await expect(settings.locator('#openrouter-settings')).toBeHidden();
@@ -23,11 +27,15 @@ test('TC-SET-002 switching provider toggles the settings blocks and active card 
   const settings = await openSettings();
   await expect(settings.locator('#groq-settings')).toBeVisible();
 
+  await settings.locator('#provider-trigger').click();
   await settings.locator('#provider-card-openrouter').click();
 
   await expect(settings.locator('input[name="provider"][value="openrouter"]')).toBeChecked();
   await expect(settings.locator('#groq-settings')).toBeHidden();
   await expect(settings.locator('#openrouter-settings')).toBeVisible();
+  await expect(settings.locator('#provider-menu')).toBeHidden();
+  await expect(settings.locator('#provider-trigger-name')).toHaveText('OpenRouter');
+  await settings.locator('#provider-trigger').click();
   await expect(settings.locator('#provider-card-openrouter')).toHaveClass(/active/);
   await expect(settings.locator('#provider-card-groq')).not.toHaveClass(/active/);
 });
@@ -36,14 +44,38 @@ test('TC-SET-011 switching to mistral shows its settings block', async ({ openSe
   const settings = await openSettings();
   await expect(settings.locator('#groq-settings')).toBeVisible();
 
+  await settings.locator('#provider-trigger').click();
   await settings.locator('#provider-card-mistral').click();
 
   await expect(settings.locator('input[name="provider"][value="mistral"]')).toBeChecked();
   await expect(settings.locator('#groq-settings')).toBeHidden();
   await expect(settings.locator('#openrouter-settings')).toBeHidden();
   await expect(settings.locator('#mistral-settings')).toBeVisible();
+  await expect(settings.locator('#provider-menu')).toBeHidden();
+  await expect(settings.locator('#provider-trigger-name')).toHaveText('Mistral');
+  await settings.locator('#provider-trigger').click();
   await expect(settings.locator('#provider-card-mistral')).toHaveClass(/active/);
   await expect(settings.locator('#provider-card-groq')).not.toHaveClass(/active/);
+});
+
+test('TC-SET-012 "Đang dùng" badge only follows the saved provider', async ({ openSettings }) => {
+  const settings = await openSettings();
+  await settings.locator('#provider-trigger').click();
+
+  await expect(settings.locator('#provider-card-groq .provider-current-badge')).toBeVisible();
+  await expect(settings.locator('#provider-card-mistral .provider-current-badge')).toBeHidden();
+
+  await settings.locator('#provider-card-mistral').click();
+  await settings.locator('#provider-trigger').click();
+
+  await expect(settings.locator('#provider-card-groq .provider-current-badge')).toBeVisible();
+  await expect(settings.locator('#provider-card-mistral .provider-current-badge')).toBeHidden();
+
+  await settings.click('#save-settings');
+  await settings.locator('#provider-trigger').click();
+
+  await expect(settings.locator('#provider-card-mistral .provider-current-badge')).toBeVisible();
+  await expect(settings.locator('#provider-card-groq .provider-current-badge')).toBeHidden();
 });
 
 test('TC-SET-003 add button disappears at the 5-key limit', async ({ openSettings }) => {
@@ -145,6 +177,8 @@ test('TC-SET-009 saving trims keys, drops empty rows and falls back to the defau
   const settings = await openSettings();
   await settings.click('#add-groq-key'); // second, left empty
   await groqKeyInputs(settings).nth(0).fill('  gsk_padded  ');
+  await settings.click('[data-input="groq-model"] .provider-trigger');
+  await settings.click('[data-input="groq-model"] .provider-card:last-child'); // "Tự nhập model"
   await settings.fill('#groq-model', '');
 
   await settings.click('#save-settings');
@@ -167,4 +201,44 @@ test('TC-SET-010 legacy gemini/openRouterApiKey config is migrated on load', asy
   const sync = await readSync(bridge);
   expect(sync.openRouterApiKeys).toEqual(['legacy_key']);
   expect(sync.openRouterApiKey).toBeUndefined();
+});
+
+test('TC-SET-013 picking a model from the dropdown updates trigger and saves it', async ({ bridge, openSettings }) => {
+  const settings = await openSettings();
+  const modelSelect = settings.locator('[data-input="groq-model"]');
+  await expect(settings.locator('#groq-model')).toBeHidden();
+
+  // Second card in the list, not the currently active (first) one or the trailing "custom" entry.
+  const targetCard = modelSelect.locator('.provider-card').nth(1);
+  const targetModel = await targetCard.locator('.provider-card-name').textContent();
+
+  await modelSelect.locator('.provider-trigger').click();
+  await targetCard.click();
+
+  await expect(modelSelect.locator('.provider-menu')).toBeHidden();
+  await expect(modelSelect.locator('.provider-trigger .provider-card-name')).toHaveText(targetModel);
+  await expect(settings.locator('#groq-model')).toBeHidden();
+
+  await settings.click('#save-settings');
+  const sync = await readSync(bridge, ['groqModel']);
+  expect(sync.groqModel).toBe(targetModel);
+});
+
+test('TC-SET-014 custom model entry saves and is restored in custom mode on reload', async ({ bridge, openSettings }) => {
+  const settings = await openSettings();
+  const modelSelect = settings.locator('[data-input="groq-model"]');
+  await modelSelect.locator('.provider-trigger').click();
+  await modelSelect.locator('.provider-card:last-child').click(); // "Tự nhập model"
+
+  await expect(settings.locator('#groq-model')).toBeVisible();
+  await settings.fill('#groq-model', 'my/custom-model');
+  await settings.click('#save-settings');
+
+  const sync = await readSync(bridge, ['groqModel']);
+  expect(sync.groqModel).toBe('my/custom-model');
+
+  const reloaded = await openSettings();
+  await expect(reloaded.locator('#groq-model')).toBeVisible();
+  await expect(reloaded.locator('#groq-model')).toHaveValue('my/custom-model');
+  await expect(reloaded.locator('[data-input="groq-model"] .provider-trigger .provider-card-name')).toHaveText('✏️ Tự nhập model');
 });

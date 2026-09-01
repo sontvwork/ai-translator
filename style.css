@@ -633,7 +633,7 @@ body.settings-page {
 }
 
 .setting-group-header .setting-label {
-  margin-bottom: 4px;
+  margin-bottom: 0;
 }
 
 .setting-description {
@@ -656,7 +656,23 @@ body.settings-page {
 }
 
 .setting-group-header .setting-description {
-  margin-bottom: 0;
+  margin: 0;
+}
+
+.setting-group-header--banner {
+  align-items: center;
+  margin: -24px -24px 20px;
+  padding: 20px 24px;
+  background: linear-gradient(135deg, #f2f4ff 0%, #f6f2fb 100%);
+  border-bottom: 1px solid #e5e7eb;
+  border-radius: 16px 16px 0 0;
+}
+
+.setting-group-header-text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
 }
 
 .setting-divider {
@@ -665,28 +681,101 @@ body.settings-page {
   margin: 24px 0;
 }
 
-.provider-cards {
+.provider-select {
+  position: relative;
+}
+
+.provider-trigger {
   display: flex;
-  gap: 10px;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 12px 14px;
+  border: 2px solid #e5e7eb;
+  border-radius: 14px;
+  background: white;
+  cursor: pointer;
+  text-align: left;
+  font-family: inherit;
+  transition: border-color 0.2s ease;
+}
+
+.provider-trigger:hover {
+  border-color: #667eea;
+}
+
+.provider-mono {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  border-radius: 10px;
+  object-fit: contain;
+}
+
+.provider-trigger-text,
+.provider-card-text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.provider-current-badge {
+  display: none;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  background: #eef1fd;
+  color: #667eea;
+}
+
+.provider-card.is-saved .provider-current-badge {
+  display: inline-flex;
+}
+
+.provider-caret {
+  flex-shrink: 0;
+  transition: transform 0.2s ease;
+}
+
+.provider-trigger[aria-expanded="true"] .provider-caret {
+  transform: rotate(180deg);
+}
+
+.provider-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  right: 0;
+  z-index: 20;
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  box-shadow: 0 8px 24px rgba(102, 126, 234, 0.15);
+  padding: 8px;
 }
 
 .provider-card {
-  flex: 1;
   display: flex;
-  flex-direction: column;
   align-items: center;
-  gap: 2px;
-  padding: 10px;
-  border: 2px solid #e5e7eb;
-  border-radius: 12px;
+  gap: 12px;
+  width: 100%;
+  padding: 9px 10px;
+  border-radius: 10px;
+  background: transparent;
   color: #374151;
   cursor: pointer;
-  text-align: center;
-  transition: all 0.2s ease;
+  transition: background-color 0.15s ease;
 }
 
 .provider-card:hover {
-  border-color: #667eea;
+  background: #edf2f7;
 }
 
 .provider-card input {
@@ -694,6 +783,13 @@ body.settings-page {
   opacity: 0;
   width: 0;
   height: 0;
+}
+
+.provider-card .provider-mono {
+  width: 32px;
+  height: 32px;
+  border-radius: 9px;
+  opacity: 0.55;
 }
 
 .provider-card-name {
@@ -706,15 +802,27 @@ body.settings-page {
   color: #6b7280;
 }
 
-.provider-card.active {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  border-color: transparent;
-  color: white;
-  box-shadow: 0 8px 20px rgba(102, 126, 234, 0.35);
+.provider-check {
+  font-size: 13px;
+  font-weight: 700;
+  color: #667eea;
+  visibility: hidden;
 }
 
-.provider-card.active .provider-card-subtitle {
-  color: rgba(255, 255, 255, 0.85);
+.provider-card.active {
+  background: #eef1fd;
+}
+
+.provider-card.active .provider-mono {
+  opacity: 1;
+}
+
+.provider-card.active .provider-check {
+  visibility: visible;
+}
+
+.model-custom-input {
+  margin-top: 8px;
 }
 
 .modern-input {
@@ -843,16 +951,6 @@ body.settings-page {
 .add-key-button:hover {
   border-color: #667eea;
   background: rgba(102, 126, 234, 0.05);
-}
-
-.setting-guide {
-  background: linear-gradient(135deg, #f0f4ff 0%, #e8f2ff 100%);
-  padding: 16px;
-  border-radius: 12px;
-  margin-top: 12px;
-  border-left: 4px solid #667eea;
-  margin-bottom: 12px;
-  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
 }
 
 .modern-range {
