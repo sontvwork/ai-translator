@@ -7,11 +7,11 @@ const MODEL_OPTIONS = {
     ],
     'mistral-model': [
         { id: 'mistral-medium-3-5', desc: 'Chất lượng dịch tốt (9/10)  ⭐' },
-        { id: 'mistral-small-2603', desc: 'Nhanh · Phù hợp dịch cơ bản' }
+        { id: 'mistral-small-2603', desc: 'Nhanh · Phù hợp dịch cơ bản (7/10)' }
     ],
     'openrouter-model': [
         { id: 'google/gemini-2.5-flash-lite', desc: 'Chất lượng dịch tốt (9/10)  ⭐' },
-        { id: 'inclusionai/ling-2.6-flash', desc: 'Siêu rẻ · Chất lượng cơ bản, dùng dự phòng' }
+        { id: 'inclusionai/ling-2.6-flash', desc: 'Siêu rẻ · Chất lượng cơ bản, dùng dự phòng (6/10)' }
     ]
 };
 const CUSTOM_MODEL = { id: '__custom__', name: '✏️ Tự nhập model', desc: 'Nhập ID model bất kỳ của nhà cung cấp' };
