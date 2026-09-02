@@ -1,4 +1,4 @@
-export const DEFAULT_GROQ_MODEL = "openai/gpt-oss-120b";
+export const DEFAULT_GROQ_MODEL = "qwen/qwen3.8-27b";
 export const DEFAULT_MISTRAL_MODEL = "mistral-medium-3-5";
 export const DEFAULT_OPENROUTER_MODEL = "google/gemini-2.5-flash-lite";
 export const MAX_API_KEYS = 5;
