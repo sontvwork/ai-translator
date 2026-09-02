@@ -1,5 +1,6 @@
 import { test, expect } from '../helpers/extension-fixtures.js';
 import { readSync } from '../helpers/storage.js';
+import { DEFAULT_GROQ_MODEL } from '../../providers.js';
 
 const groqKeyInputs = (settings) => settings.locator('#groq-key-list .api-key-row input');
 
@@ -155,7 +156,7 @@ test('TC-SET-007 save shows success message and persists to chrome.storage.sync 
   const sync = await readSync(bridge);
   expect(sync.provider).toBe('groq');
   expect(sync.groqApiKeys).toEqual(['gsk_saved_key']);
-  expect(sync.groqModel).toBe('openai/gpt-oss-120b');
+  expect(sync.groqModel).toBe(DEFAULT_GROQ_MODEL);
   expect(sync.mistralApiKeys).toEqual([]);
   expect(sync.openRouterApiKeys).toEqual([]);
   expect(sync.translationDelay).toBe(500);
@@ -186,7 +187,7 @@ test('TC-SET-009 saving trims keys, drops empty rows and falls back to the defau
 
   const sync = await readSync(bridge, ['groqApiKeys', 'groqModel']);
   expect(sync.groqApiKeys).toEqual(['gsk_padded']);
-  expect(sync.groqModel).toBe('openai/gpt-oss-120b');
+  expect(sync.groqModel).toBe(DEFAULT_GROQ_MODEL);
 });
 
 test('TC-SET-010 legacy gemini/openRouterApiKey config is migrated on load', async ({ bridge, openSettings }) => {

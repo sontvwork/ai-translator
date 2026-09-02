@@ -1,6 +1,7 @@
 import { test, expect } from '../helpers/extension-fixtures.js';
 import { mockProvider } from '../helpers/provider-mock.js';
 import { seedSettings, seedLocal, readLocal } from '../helpers/storage.js';
+import { DEFAULT_MISTRAL_MODEL } from '../../providers.js';
 
 test('TC-POP-001 typing translates via mocked SSE with a single request @smoke', async ({ bridge, extContext, openPopup }) => {
   await seedSettings(bridge);
@@ -159,7 +160,7 @@ test('TC-POP-014 mistral provider hits its endpoint with the seeded model and ke
   await seedSettings(bridge, {
     provider: 'mistral',
     mistralApiKeys: ['sk_mistral_test_key'],
-    mistralModel: 'mistral-medium-3-5'
+    mistralModel: DEFAULT_MISTRAL_MODEL
   });
   const requests = await mockProvider(extContext, [{ text: 'Qua Mistral' }]);
 
@@ -169,7 +170,7 @@ test('TC-POP-014 mistral provider hits its endpoint with the seeded model and ke
   await expect(popup.locator('#output-text')).toHaveValue('Qua Mistral');
   expect(requests).toHaveLength(1);
   expect(requests[0].url).toBe('https://api.mistral.ai/v1/chat/completions');
-  expect(requests[0].body.model).toBe('mistral-medium-3-5');
+  expect(requests[0].body.model).toBe(DEFAULT_MISTRAL_MODEL);
   expect(requests[0].authorization).toBe('Bearer sk_mistral_test_key');
 });
 
