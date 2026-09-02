@@ -2,11 +2,11 @@ import { loadProviderSettings, DEFAULT_GROQ_MODEL, DEFAULT_MISTRAL_MODEL, DEFAUL
 
 const MODEL_OPTIONS = {
     'groq-model': [
-        { id: 'openai/gpt-oss-120b', desc: 'Chất lượng dịch tốt (8/10)  ⭐' },
-        { id: 'openai/gpt-oss-20b', desc: 'Chất lượng dịch khá (6/10) · Phù hợp dịch cơ bản, không phải tài liệu quan trọng' },
+        { id: 'qwen/qwen3.8-27b', desc: 'Chất lượng dịch rất tốt (9/10) · Tốc độ tuyệt vời  ⭐' },
+        { id: 'openai/gpt-oss-120b', desc: 'Chất lượng dịch tốt (8/10)' },
     ],
     'mistral-model': [
-        { id: 'mistral-medium-3-5', desc: 'Chất lượng dịch rất tốt (9.5/10)  ⭐' },
+        { id: 'mistral-medium-3-5', desc: 'Chất lượng dịch tốt (9/10)  ⭐' },
         { id: 'mistral-small-2603', desc: 'Nhanh · Phù hợp dịch cơ bản' }
     ],
     'openrouter-model': [
