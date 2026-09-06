@@ -211,18 +211,19 @@ test('TC-SET-013 picking a model from the dropdown updates trigger and saves it'
 
   // Second card in the list, not the currently active (first) one or the trailing "custom" entry.
   const targetCard = modelSelect.locator('.provider-card').nth(1);
-  const targetModel = await targetCard.locator('.provider-card-name').textContent();
+  // Cards show a display name, while the saved value stays the model ID.
+  const targetName = await targetCard.locator('.provider-card-name').textContent();
 
   await modelSelect.locator('.provider-trigger').click();
   await targetCard.click();
 
   await expect(modelSelect.locator('.provider-menu')).toBeHidden();
-  await expect(modelSelect.locator('.provider-trigger .provider-card-name')).toHaveText(targetModel);
+  await expect(modelSelect.locator('.provider-trigger .provider-card-name')).toHaveText(targetName);
   await expect(settings.locator('#groq-model')).toBeHidden();
 
   await settings.click('#save-settings');
   const sync = await readSync(bridge, ['groqModel']);
-  expect(sync.groqModel).toBe(targetModel);
+  expect(sync.groqModel).toBe('openai/gpt-oss-120b');
 });
 
 test('TC-SET-014 custom model entry saves and is restored in custom mode on reload', async ({ bridge, openSettings }) => {
