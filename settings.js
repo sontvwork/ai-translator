@@ -2,16 +2,16 @@ import { loadProviderSettings, DEFAULT_GROQ_MODEL, DEFAULT_MISTRAL_MODEL, DEFAUL
 
 const MODEL_OPTIONS = {
     'groq-model': [
-        { id: 'qwen/qwen3.8-27b', desc: 'Chất lượng dịch rất tốt (9/10) · Tốc độ tuyệt vời  ⭐' },
-        { id: 'openai/gpt-oss-120b', desc: 'Chất lượng dịch tốt (8/10)' },
+        { id: 'qwen/qwen3.8-27b', name: 'Qwen 3.8 27B', desc: 'Chất lượng dịch rất tốt (9/10) · Tốc độ tuyệt vời  ⭐' },
+        { id: 'openai/gpt-oss-120b', name: 'GPT OSS 120B', desc: 'Chất lượng dịch tốt (8/10)' },
     ],
     'mistral-model': [
-        { id: 'mistral-medium-3-5', desc: 'Chất lượng dịch tốt (9/10)  ⭐' },
-        { id: 'mistral-small-2603', desc: 'Nhanh · Phù hợp dịch cơ bản (7/10)' }
+        { id: 'mistral-medium-3-5', name: 'Mistral Medium 3.5', desc: 'Chất lượng dịch tốt (9/10)  ⭐' },
+        { id: 'mistral-small-2603', name: 'Mistral Small 4', desc: 'Nhanh · Phù hợp dịch cơ bản (7/10)' }
     ],
     'openrouter-model': [
-        { id: 'google/gemini-2.5-flash-lite', desc: 'Chất lượng dịch tốt (9/10)  ⭐' },
-        { id: 'inclusionai/ling-2.6-flash', desc: 'Siêu rẻ · Chất lượng cơ bản, dùng dự phòng (6/10)' }
+        { id: 'google/gemini-2.5-flash-lite', name: 'Gemini 2.5 Flash Lite', desc: 'Chất lượng dịch tốt (9/10)  ⭐' },
+        { id: 'inclusionai/ling-2.6-flash', name: 'Ling 2.6 Flash', desc: 'Siêu rẻ · Chất lượng cơ bản, dùng dự phòng (6/10)' }
     ]
 };
 const CUSTOM_MODEL = { id: '__custom__', name: '✏️ Tự nhập model', desc: 'Nhập ID model bất kỳ của nhà cung cấp' };
