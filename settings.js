@@ -2,12 +2,11 @@ import { loadProviderSettings, DEFAULT_GROQ_MODEL, DEFAULT_MISTRAL_MODEL, DEFAUL
 
 const MODEL_OPTIONS = {
     'groq-model': [
-        { id: 'qwen/qwen3.8-27b', name: 'Qwen 3.8 27B', desc: 'Chất lượng dịch rất tốt (9/10) · Tốc độ tuyệt vời  ⭐' },
-        { id: 'openai/gpt-oss-120b', name: 'GPT OSS 120B', desc: 'Chất lượng dịch tốt (8/10)' },
+        { id: 'qwen/qwen3.8-27b', name: 'Qwen 3.8 27B', desc: 'Chất lượng dịch rất tốt (9/10) · Quota thấp, hay bị chạm giới hạn' },
+        { id: 'openai/gpt-oss-120b', name: 'GPT OSS 120B', desc: 'Chất lượng dịch tốt (8/10) · Quota thoáng' },
     ],
     'mistral-model': [
-        { id: 'mistral-medium-3-5', name: 'Mistral Medium 3.5', desc: 'Chất lượng dịch tốt (9/10)  ⭐' },
-        { id: 'mistral-small-2603', name: 'Mistral Small 4', desc: 'Nhanh · Phù hợp dịch cơ bản (7/10)' }
+        { id: 'ministral-14b-2512', name: 'Ministral 14B', desc: 'Chất lượng dịch trung bình (7/10)' },
     ],
     'openrouter-model': [
         { id: 'google/gemini-2.5-flash-lite', name: 'Gemini 2.5 Flash Lite', desc: 'Chất lượng dịch tốt (9/10)  ⭐' },
