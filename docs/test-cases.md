@@ -86,6 +86,8 @@ Tài liệu này là **nguồn chân lý** cho toàn bộ test case của extens
 | TC-NOT-003 | Đánh dấu tất cả đã đọc | Storage trống | Mở popover, click "Đánh dấu đã đọc" | Badge ẩn; `readNotificationIds` = toàn bộ id | P2 | Auto |
 | TC-NOT-004 | Trạng thái đã đọc bền vững | Seed `readNotificationIds` = toàn bộ id | Mở popup | Badge ẩn ngay từ đầu | P2 | Auto |
 | TC-NOT-005 | Hai popover loại trừ nhau | Seed 1 bản ghi lịch sử | Mở popover lịch sử, click chuông; rồi ngược lại | Mở cái này thì cái kia đóng | P2 | Auto |
+| TC-NOT-006 | Cờ `enabled: false` ẩn thông báo | — | Kiểm tra `NOTIFICATIONS` lọc từ `ALL_NOTIFICATIONS`; mở popup với dữ liệu thật | Mọi mục `enabled: false` vắng mặt trong `NOTIFICATIONS`; badge + danh sách chỉ đếm mục đã lọc | P2 | Auto |
+| TC-NOT-007 | Thông báo quá hạn tự ẩn | — | Kiểm tra lọc theo `expiresAt` so với ngày hôm nay | Mục có `expiresAt` < hôm nay vắng mặt; mục hết hạn đúng hôm nay vẫn hiện; mục không có `expiresAt` luôn hiện | P2 | Auto |
 
 ## Content script — dịch trên trang (`tests/e2e/content-script.spec.js` — trang web mock tại `https://e2e.test/`)
 

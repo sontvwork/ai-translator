@@ -1,11 +1,14 @@
 import { test, expect } from '../helpers/extension-fixtures.js';
 import { seedSettings, seedLocal, readLocal } from '../helpers/storage.js';
-import { NOTIFICATIONS } from '../../notifications.js';
+import { NOTIFICATIONS, ALL_NOTIFICATIONS } from '../../notifications.js';
 
 // Asserts are dynamic against notifications.js so releases adding notifications don't break tests.
 const ALL_IDS = NOTIFICATIONS.map((n) => n.id);
 // The popover lists newest (highest id) first.
 const SORTED = [...NOTIFICATIONS].sort((a, b) => b.id - a.id);
+// Local date as "YYYY-MM-DD" — the same comparison notifications.js uses.
+const TODAY = new Date().toLocaleDateString('sv-SE');
+const EXPIRED = ALL_NOTIFICATIONS.filter((n) => n.expiresAt && n.expiresAt < TODAY);
 
 test('TC-NOT-001 badge shows unread count and popover lists all titles @smoke', async ({ bridge, openPopup }) => {
   await seedSettings(bridge);
@@ -85,4 +88,37 @@ test('TC-NOT-005 history and notifications popovers are mutually exclusive', asy
   await popup.click('#history-button');
   await expect(popup.locator('#history-popover')).toBeVisible();
   await expect(popup.locator('#notifications-popover')).toBeHidden();
+});
+
+test('TC-NOT-006 disabled notifications never reach the popup', async ({ bridge, openPopup }) => {
+  await seedSettings(bridge);
+
+  // Nothing with enabled:false survives the filter, and the UI only ever sees the filtered list.
+  expect(NOTIFICATIONS.filter((n) => n.enabled === false)).toEqual([]);
+  expect(NOTIFICATIONS.length).toBeLessThanOrEqual(ALL_NOTIFICATIONS.length);
+  expect(ALL_NOTIFICATIONS.filter((n) => n.enabled === false).length)
+    .toBe(ALL_NOTIFICATIONS.length - NOTIFICATIONS.length - EXPIRED.length);
+
+  const popup = await openPopup();
+  await popup.click('#notifications-button');
+  await expect(popup.locator('#notifications-list .history-item')).toHaveCount(NOTIFICATIONS.length);
+  for (const hidden of ALL_NOTIFICATIONS.filter((n) => !NOTIFICATIONS.includes(n))) {
+    await expect(popup.locator('#notifications-list').getByText(hidden.title)).toHaveCount(0);
+  }
+});
+
+test('TC-NOT-007 notifications past expiresAt are filtered out', async () => {
+  // Nothing expired survives; everything that does is unexpired or dateless.
+  for (const n of NOTIFICATIONS) {
+    expect(!n.expiresAt || n.expiresAt >= TODAY).toBe(true);
+  }
+  for (const n of EXPIRED) {
+    expect(NOTIFICATIONS).not.toContain(n);
+  }
+
+  // An entry expiring today is still shown (the cut-off is end of that day).
+  const unexpired = ALL_NOTIFICATIONS.filter((n) => n.expiresAt === TODAY);
+  for (const n of unexpired) {
+    expect(NOTIFICATIONS).toContain(n);
+  }
 });
